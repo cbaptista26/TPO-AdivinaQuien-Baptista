@@ -1,14 +1,11 @@
 package com.tpo.adivinaquien.vista;
 
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.tpo.adivinaquien.catalogo.CatalogoPersonajes;
 import com.tpo.adivinaquien.modelo.EvaluacionFiltro;
 import com.tpo.adivinaquien.modelo.Filtro;
 import com.tpo.adivinaquien.modelo.Personaje;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
@@ -18,11 +15,11 @@ import java.util.Map;
  * ===========================================================================
  * LA VISTA SWING
  * ===========================================================================
- * <p>
+ *
  * Igual que JuegoConsola, esta clase es UNICAMENTE presentacion: dibuja
  * componentes y escucha clics. No decide nada del juego. Cada vez que el
  * usuario hace algo, se lo pasa a ControladorPartida, que llama al motor.
- * <p>
+ *
  * Los 23 personajes y los 6 botones de pregunta NO estan en el formulario:
  * se generan aca por codigo dentro de panelTablero y panelFiltros, que en el
  * .form quedaron vacios a proposito. Asi, si maniana se agrega un filtro o un
@@ -50,9 +47,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
     private RegistroSwing registro;
     private ControladorPartida controlador;
 
-    /**
-     * Una tarjeta por personaje, para poder tacharla cuando se descarta.
-     */
+    /** Una tarjeta por personaje, para poder tacharla cuando se descarta. */
     private final Map<Integer, JLabel> tarjetas = new HashMap<>();
 
     // -----------------------------------------------------------------
@@ -78,14 +73,14 @@ public class VentanaJuego implements ControladorPartida.Observador {
 
     /**
      * Reacomoda los componentes que creo el GUI Designer.
-     * <p>
+     *
      * POR QUE ESTA ESTE METODO
      * El .form define QUE componentes existen y con que nombre; eso es lo que
      * se disenia visualmente. Pero el GridLayoutManager del disenador reparte
      * el espacio en celdas fijas, y con un tablero de 23 tarjetas mas un panel
      * de razonamiento que crece, los botones de pregunta quedaban fuera de la
      * pantalla.
-     * <p>
+     *
      * Aca se toman esos mismos componentes y se reorganizan con BorderLayout y
      * JScrollPane, que reparten el espacio de forma proporcional y agregan
      * barras de desplazamiento cuando hace falta. Asi la ventana se ve bien en
@@ -151,9 +146,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
     // CONSTRUCCION DEL TABLERO
     // -----------------------------------------------------------------
 
-    /**
-     * Crea una tarjeta por cada uno de los 23 personajes.
-     */
+    /** Crea una tarjeta por cada uno de los 23 personajes. */
     private void construirTablero() {
         List<Personaje> todos = CatalogoPersonajes.getInstancia().getOrdenDeCarga();
 
@@ -174,9 +167,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
         panelTablero.repaint();
     }
 
-    /**
-     * El contenido de una tarjeta, en HTML para poder poner dos renglones.
-     */
+    /** El contenido de una tarjeta, en HTML para poder poner dos renglones. */
     private String textoDeTarjeta(Personaje p) {
         return "<html><center><b>" + p.getNombre() + "</b><br>"
                 + "<font size=2>"
@@ -187,9 +178,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
                 + "</font></center></html>";
     }
 
-    /**
-     * Rehace los botones de pregunta con los filtros que siguen disponibles.
-     */
+    /** Rehace los botones de pregunta con los filtros que siguen disponibles. */
     private void construirFiltros() {
         panelFiltros.setLayout(new GridLayout(0, 1, 2, 2));
         panelFiltros.removeAll();
@@ -208,9 +197,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
     // ACCIONES DEL USUARIO
     // -----------------------------------------------------------------
 
-    /**
-     * Le pide a la persona que elija su personaje secreto y arranca la partida.
-     */
+    /** Le pide a la persona que elija su personaje secreto y arranca la partida. */
     private void pedirPersonajeYArrancar() {
         List<Personaje> todos = CatalogoPersonajes.getInstancia().getOrdenDeCarga();
 
@@ -230,9 +217,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
         }
     }
 
-    /**
-     * Le pide a la persona a quien quiere arriesgar.
-     */
+    /** Le pide a la persona a quien quiere arriesgar. */
     private void pedirSuposicion() {
         List<Personaje> candidatos = controlador.candidatosDelHumano();
         if (candidatos.isEmpty()) return;
@@ -253,7 +238,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
 
     /**
      * Muestra la evaluacion greedy aplicada al tablero de la persona.
-     * <p>
+     *
      * No juega por ella: le muestra el mismo calculo que hace la maquina para
      * que pueda comparar su decision con la del algoritmo. Es la funcion que
      * sirve para explicar el criterio greedy en la defensa oral.
@@ -286,9 +271,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
     // LO QUE PIDE EL CONTROLADOR (interfaz Observador)
     // -----------------------------------------------------------------
 
-    /**
-     * Redibuja tablero, contadores y botones segun el estado de la partida.
-     */
+    /** Redibuja tablero, contadores y botones segun el estado de la partida. */
     @Override
     public void actualizar() {
         boolean hayPartida = controlador.hayPartida();
@@ -316,7 +299,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
 
     /**
      * Tacha en gris los personajes que ya fueron descartados.
-     * <p>
+     *
      * Esto es Divide and Conquer hecho visible: los que quedan son el
      * subconjunto que sobrevivio a todas las respuestas; los tachados son las
      * ramas que se descartaron enteras.
@@ -352,55 +335,5 @@ public class VentanaJuego implements ControladorPartida.Observador {
     public void mostrarFinal(String texto) {
         JOptionPane.showMessageDialog(panelPrincipal, texto,
                 "Fin de la partida", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    {
-// GUI initializer generated by IntelliJ IDEA GUI Designer
-// >>> IMPORTANT!! <<<
-// DO NOT EDIT OR ADD ANY CODE HERE!
-        $$$setupUI$$$();
-    }
-
-    /**
-     * Method generated by IntelliJ IDEA GUI Designer
-     * >>> IMPORTANT!! <<<
-     * DO NOT edit this method OR call it in your code!
-     *
-     * @noinspection ALL
-     */
-    private void $$$setupUI$$$() {
-        panelPrincipal = new JPanel();
-        panelPrincipal.setLayout(new GridLayoutManager(6, 3, new Insets(0, 0, 0, 0), -1, -1));
-        panelPrincipal.setBorder(BorderFactory.createTitledBorder(null, "panelPrincipal", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
-        lblTurno = new JLabel();
-        lblTurno.setText("Turno");
-        panelPrincipal.add(lblTurno, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        lblCandidatos = new JLabel();
-        lblCandidatos.setText("Candidatos: 23");
-        panelPrincipal.add(lblCandidatos, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        btnNuevaPartida = new JButton();
-        btnNuevaPartida.setText("Nueva partida");
-        panelPrincipal.add(btnNuevaPartida, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        panelTablero = new JPanel();
-        panelTablero.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panelPrincipal.add(panelTablero, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        txtRazonamiento = new JTextArea();
-        panelPrincipal.add(txtRazonamiento, new GridConstraints(2, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
-        btnArriesgar = new JButton();
-        btnArriesgar.setText("Arriesgar");
-        panelPrincipal.add(btnArriesgar, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        btnSugerencia = new JButton();
-        btnSugerencia.setText("¿Qué preguntaría la máquina?");
-        panelPrincipal.add(btnSugerencia, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        panelFiltros = new JPanel();
-        panelFiltros.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panelPrincipal.add(panelFiltros, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$() {
-        return panelPrincipal;
     }
 }
