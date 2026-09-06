@@ -1,5 +1,7 @@
 package com.tpo.adivinaquien.vista;
 
+import com.tpo.adivinaquien.app.SimulacionEstrategias;
+import com.tpo.adivinaquien.app.VerificacionCatalogo;
 import com.tpo.adivinaquien.catalogo.CatalogoPersonajes;
 import com.tpo.adivinaquien.modelo.EvaluacionFiltro;
 import com.tpo.adivinaquien.modelo.Filtro;
@@ -7,17 +9,26 @@ import com.tpo.adivinaquien.modelo.Personaje;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * VISTA SWING. Igual que JuegoConsola, solo presentacion: dibuja componentes y
- * escucha clics. Cada accion del usuario se la pasa a ControladorPartida.
+ * ===========================================================================
+ * LA VISTA SWING
+ * ===========================================================================
  *
- * Los 23 personajes y los 6 botones de pregunta no estan en el formulario: se
- * generan por codigo dentro de panelTablero y panelFiltros, que en el .form
- * quedan vacios. Asi, agregar un filtro no obliga a redibujar nada.
+ * Igual que JuegoConsola, esta clase es UNICAMENTE presentacion: dibuja
+ * componentes y escucha clics. No decide nada del juego. Cada vez que el
+ * usuario hace algo, se lo pasa a ControladorPartida, que llama al motor.
+ *
+ * Los 23 personajes y los 6 botones de pregunta NO estan en el formulario:
+ * se generan aca por codigo dentro de panelTablero y panelFiltros, que en el
+ * .form quedaron vacios a proposito. Asi, si maniana se agrega un filtro o un
+ * personaje, no hay que redibujar nada en el disenador.
  */
 public class VentanaJuego implements ControladorPartida.Observador {
 
@@ -41,6 +52,12 @@ public class VentanaJuego implements ControladorPartida.Observador {
     private RegistroSwing registro;
     private ControladorPartida controlador;
 
+    /** Selector con los cuatro modos, equivalente al menu de la consola. */
+    private JComboBox<String> comboModo;
+
+    /** Reproduce el modo maquina vs maquina turno a turno. */
+    private Timer temporizador;
+
     /** Una tarjeta por personaje, para poder tacharla cuando se descarta. */
     private final Map<Integer, JLabel> tarjetas = new HashMap<>();
 
@@ -58,7 +75,8 @@ public class VentanaJuego implements ControladorPartida.Observador {
         reorganizarLayout();
         construirTablero();
 
-        btnNuevaPartida.addActionListener(e -> pedirPersonajeYArrancar());
+        btnNuevaPartida.setText("Iniciar");
+        btnNuevaPartida.addActionListener(e -> iniciarModoElegido());
         btnArriesgar.addActionListener(e -> pedirSuposicion());
         btnSugerencia.addActionListener(e -> mostrarSugerencias());
 
@@ -66,12 +84,19 @@ public class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Arma el layout definitivo con BorderLayout y JScrollPane.
+     * Reacomoda los componentes que creo el GUI Designer.
      *
-     * El .form define QUE componentes existen. El GridLayoutManager del
-     * disenador reparte el espacio en celdas fijas y con 23 tarjetas mas un
-     * panel de texto que crece dejaba los botones fuera de pantalla;
-     * BorderLayout reparte proporcionalmente y el scroll evita los cortes.
+     * POR QUE ESTA ESTE METODO
+     * El .form define QUE componentes existen y con que nombre; eso es lo que
+     * se disenia visualmente. Pero el GridLayoutManager del disenador reparte
+     * el espacio en celdas fijas, y con un tablero de 23 tarjetas mas un panel
+     * de razonamiento que crece, los botones de pregunta quedaban fuera de la
+     * pantalla.
+     *
+     * Aca se toman esos mismos componentes y se reorganizan con BorderLayout y
+     * JScrollPane, que reparten el espacio de forma proporcional y agregan
+     * barras de desplazamiento cuando hace falta. Asi la ventana se ve bien en
+     * cualquier resolucion, sin tocar el .form.
      */
     private void reorganizarLayout() {
         panelPrincipal.removeAll();
@@ -83,9 +108,13 @@ public class VentanaJuego implements ControladorPartida.Observador {
         etiquetas.add(lblTurno);
         etiquetas.add(lblCandidatos);
 
+        JPanel controles = new JPanel(new BorderLayout(6, 6));
+        controles.add(comboModo, BorderLayout.CENTER);
+        controles.add(btnNuevaPartida, BorderLayout.EAST);
+
         JPanel superior = new JPanel(new BorderLayout(8, 8));
         superior.add(etiquetas, BorderLayout.CENTER);
-        superior.add(btnNuevaPartida, BorderLayout.EAST);
+        superior.add(controles, BorderLayout.EAST);
 
         // --- columna derecha: preguntas arriba, acciones abajo ---
         JPanel acciones = new JPanel(new GridLayout(2, 1, 4, 4));
@@ -184,6 +213,68 @@ public class VentanaJuego implements ControladorPartida.Observador {
     // ACCIONES DEL USUARIO
     // -----------------------------------------------------------------
 
+    /** Ejecuta el modo seleccionado en el desplegable. */
+    private void iniciarModoElegido() {
+        detenerTemporizador();
+
+        switch (comboModo.getSelectedIndex()) {
+            case 0 -> pedirPersonajeYArrancar();
+            case 1 -> arrancarMaquinaVsMaquina();
+            case 2 -> mostrarSalida(() -> SimulacionEstrategias.main(new String[0]));
+            case 3 -> mostrarSalida(() -> VerificacionCatalogo.main(new String[0]));
+            default -> { }
+        }
+    }
+
+    /**
+     * Modo maquina vs maquina: las dos juegan solas y un Timer va mostrando un
+     * turno por segundo para poder seguir el razonamiento en pantalla.
+     *
+     * Se usa javax.swing.Timer y no Thread.sleep porque el Timer dispara sus
+     * eventos en el mismo hilo de Swing: asi la ventana se sigue redibujando
+     * entre turno y turno en vez de quedar congelada.
+     */
+    private void arrancarMaquinaVsMaquina() {
+        registro.limpiar();
+        construirTablero();
+        controlador.nuevaPartidaEntreMaquinas();
+
+        temporizador = new Timer(1100, e -> {
+            if (!controlador.avanzarTurnoDeMaquinas()) detenerTemporizador();
+        });
+        temporizador.start();
+    }
+
+    private void detenerTemporizador() {
+        if (temporizador != null && temporizador.isRunning()) temporizador.stop();
+    }
+
+    /**
+     * Corre una de las clases de analisis y vuelca lo que imprime en el panel
+     * de razonamiento, redirigiendo System.out temporalmente. Asi la ventana
+     * muestra exactamente la misma salida que la consola, sin duplicar codigo.
+     */
+    private void mostrarSalida(Runnable analisis) {
+        registro.limpiar();
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        PrintStream original = System.out;
+
+        try {
+            System.setOut(new PrintStream(buffer, true, StandardCharsets.UTF_8));
+            analisis.run();
+        } finally {
+            System.setOut(original);   // se restaura siempre, aunque falle
+        }
+
+        registro.registrar(buffer.toString(StandardCharsets.UTF_8));
+
+        lblTurno.setText("Resultado del analisis (la misma salida que en consola)");
+        lblCandidatos.setText("");
+        btnArriesgar.setEnabled(false);
+        btnSugerencia.setEnabled(false);
+    }
+
     /** Le pide a la persona que elija su personaje secreto y arranca la partida. */
     private void pedirPersonajeYArrancar() {
         List<Personaje> todos = CatalogoPersonajes.getInstancia().getOrdenDeCarga();
@@ -206,7 +297,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
 
     /** Le pide a la persona a quien quiere arriesgar. */
     private void pedirSuposicion() {
-        List<Personaje> candidatos = controlador.candidatosDelHumano();
+        List<Personaje> candidatos = controlador.candidatosDelTablero();
         if (candidatos.isEmpty()) return;
 
         Personaje elegido = (Personaje) JOptionPane.showInputDialog(
@@ -224,8 +315,11 @@ public class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Muestra la evaluacion greedy sobre el tablero de la persona. No juega por
-     * ella: permite comparar la decision humana con la del algoritmo.
+     * Muestra la evaluacion greedy aplicada al tablero de la persona.
+     *
+     * No juega por ella: le muestra el mismo calculo que hace la maquina para
+     * que pueda comparar su decision con la del algoritmo. Es la funcion que
+     * sirve para explicar el criterio greedy en la defensa oral.
      */
     private void mostrarSugerencias() {
         List<EvaluacionFiltro> sugerencias = controlador.sugerencias();
@@ -233,7 +327,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
 
         StringBuilder sb = new StringBuilder();
         sb.append("Evaluacion greedy sobre tus ")
-                .append(controlador.candidatosDelHumano().size())
+                .append(controlador.candidatosDelTablero().size())
                 .append(" candidatos.\n")
                 .append("Menor peor caso = mejor pregunta.\n\n");
 
@@ -262,16 +356,22 @@ public class VentanaJuego implements ControladorPartida.Observador {
         boolean puedeJugar = controlador.esTurnoDelHumano();
 
         if (!hayPartida) {
-            lblTurno.setText("Apreta \"Nueva partida\" para empezar");
+            lblTurno.setText("Elegi un modo y apreta \"Iniciar\"");
             lblCandidatos.setText("");
+        } else if (controlador.esModoMaquinas() && !controlador.termino()) {
+            lblTurno.setText("Turno " + (controlador.numeroTurno() + 1)
+                    + " - juega " + controlador.nombreEnTurno());
+            lblCandidatos.setText("GREEDY: " + controlador.candidatosDelTablero().size()
+                    + " candidatos  |  SECUENCIAL: " + controlador.candidatosDelRival());
         } else if (controlador.termino()) {
             lblTurno.setText("Partida terminada. Gano: " + controlador.nombreDelGanador());
             lblCandidatos.setText("");
         } else {
             lblTurno.setText("Turno " + (controlador.numeroTurno() + 1)
                     + " - " + (puedeJugar ? "te toca a vos" : "piensa la maquina"));
-            lblCandidatos.setText("Vos: " + controlador.candidatosDelHumano().size()
-                    + " candidatos  |  Maquina: " + controlador.candidatosDeLaMaquina());
+            lblCandidatos.setText(controlador.nombreJugadorA() + ": "
+                    + controlador.candidatosDelTablero().size() + " candidatos  |  "
+                    + controlador.nombreJugadorB() + ": " + controlador.candidatosDelRival());
         }
 
         pintarTablero();
@@ -282,8 +382,11 @@ public class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Tacha en gris los personajes descartados. Es D&C hecho visible: lo verde
-     * es el subconjunto que sobrevivio, lo gris son las ramas descartadas.
+     * Tacha en gris los personajes que ya fueron descartados.
+     *
+     * Esto es Divide and Conquer hecho visible: los que quedan son el
+     * subconjunto que sobrevivio a todas las respuestas; los tachados son las
+     * ramas que se descartaron enteras.
      */
     private void pintarTablero() {
         if (!controlador.hayPartida()) {
@@ -295,7 +398,7 @@ public class VentanaJuego implements ControladorPartida.Observador {
             return;
         }
 
-        List<Personaje> vivos = controlador.candidatosDelHumano();
+        List<Personaje> vivos = controlador.candidatosDelTablero();
 
         for (Map.Entry<Integer, JLabel> entrada : tarjetas.entrySet()) {
             boolean sigueVivo = vivos.stream().anyMatch(p -> p.getId() == entrada.getKey());
