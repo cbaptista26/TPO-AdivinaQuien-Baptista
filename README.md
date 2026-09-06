@@ -4,7 +4,7 @@
 
 **Alumna:** Baptista Candela · **Legajo:** 1158810
 
----
+----
 
 ## Cómo encaré el problema
 
