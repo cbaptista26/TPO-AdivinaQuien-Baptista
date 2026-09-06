@@ -9,8 +9,6 @@ public class FiltroColorPelo extends Filtro {
         this.color = color;
     }
 
-    public ColorPelo getColor() { return color; }
-
     @Override
     public boolean evaluar(Personaje personaje) {
         return personaje.getColorPelo() == color;

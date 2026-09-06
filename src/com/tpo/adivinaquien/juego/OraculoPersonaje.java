@@ -12,7 +12,6 @@ import com.tpo.adivinaquien.modelo.Personaje;
 public class OraculoPersonaje implements Oraculo {
 
     private final Personaje secreto;
-    private int cantidadPreguntas = 0;
 
     public OraculoPersonaje(Personaje secreto) {
         if (secreto == null) {
@@ -23,18 +22,12 @@ public class OraculoPersonaje implements Oraculo {
 
     @Override
     public boolean responder(Filtro filtro) {
-        cantidadPreguntas++;
         return filtro.evaluar(secreto);
     }
 
     @Override
     public boolean esElPersonaje(Personaje candidato) {
         return candidato != null && candidato.getId() == secreto.getId();
-    }
-
-    @Override
-    public int getCantidadPreguntas() {
-        return cantidadPreguntas;
     }
 
     /**

@@ -10,54 +10,30 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Carga los 23 personajes del juego y arma la lista ordenada de la maquina.
+ * Carga los 23 personajes y arma la lista ordenada de la maquina.
  *
- * ---------------------------------------------------------------------------
- * QUE PIDE EL ENUNCIADO
- * "Los personajes empiezan ordenados unicamente segun su genero y es la maquina
- *  quien debe disponerlos en una lista ordenada de forma autoincremental segun
- *  se agregan los personajes."
- *
- * COMO LO RESOLVIMOS
- * Los personajes entran agrupados solo por genero (primero las mujeres, despues
- * los hombres) y en un orden arbitrario dentro de cada grupo. A medida que se
- * agregan, la maquina hace dos cosas:
- *   1. le asigna un id autoincremental (1, 2, 3, ...), que es su identidad; y
- *   2. lo INSERTA en la posicion que le corresponde dentro de una lista que se
- *      mantiene siempre ordenada por atributos.
- *
- * El punto 2 es lo que se resuelve con un algoritmo: para saber en que posicion
- * va cada personaje nuevo usamos BUSQUEDA BINARIA sobre la parte de la lista ya
- * ordenada. Ver buscarPosicion(), que es Divide and Conquer puro.
- *
- * POR QUE NO MERGESORT (esto lo va a preguntar el profesor)
- * MergeSort necesita el arreglo completo para dividirlo a la mitad. Aca los
- * personajes llegan de a uno, asi que habria que reordenar toda la lista con
- * cada alta: Theta(n log n) por personaje, Theta(n^2 log n) en total. La
- * insercion binaria cuesta Theta(log n) para ubicar la posicion mas Theta(n)
- * para correr los elementos de atras, o sea Theta(n) por alta y Theta(n^2) en
- * total. Con n = 23 son unas 500 operaciones: irrelevante. Elegimos insercion
- * binaria porque es la que corresponde al patron de carga incremental que pide
- * el enunciado, no porque MergeSort sea "malo".
- * ---------------------------------------------------------------------------
+ * El enunciado pide que los personajes empiecen ordenados solo por genero y que
+ * la maquina los disponga en una lista ordenada de forma autoincremental segun
+ * se agregan. Cada alta recibe un id incremental y se INSERTA en su posicion
+ * usando busqueda binaria (ver buscarPosicion): Divide and Conquer aplicado a
+ * la carga. Ver seccion 5 de la documentacion, que explica ademas por que no se
+ * uso MergeSort.
  */
 public class CatalogoPersonajes {
 
-    /** Cantidad de personajes que exige el enunciado. */
     public static final int CANTIDAD_PERSONAJES = 23;
 
     private static final CatalogoPersonajes INSTANCIA = new CatalogoPersonajes();
 
-    /** Contador autoincremental: el proximo id libre. */
     private int siguienteId = 1;
 
-    /** Lista tal como llegan: agrupados solo por genero. Es el estado inicial del tablero. */
+    /** Como llegan: agrupados solo por genero. Es el tablero inicial. */
     private final List<Personaje> ordenDeCarga = new ArrayList<>();
 
-    /** Lista que la maquina mantiene ordenada por atributos, alta por alta. */
+    /** La lista que la maquina mantiene ordenada por atributos, alta por alta. */
     private final List<Personaje> ordenados = new ArrayList<>();
 
-    /** Traza de la insercion binaria, para poder mostrarla en consola. */
+    /** Traza de la insercion binaria, para mostrarla en consola. */
     private final List<String> trazaDeCarga = new ArrayList<>();
 
     private CatalogoPersonajes() {
@@ -65,26 +41,18 @@ public class CatalogoPersonajes {
         verificarUnicidad();
     }
 
-    public static CatalogoPersonajes getInstancia() {
-        return INSTANCIA;
-    }
-
-    // ------------------------------------------------------------------
-    // CARGA
-    // ------------------------------------------------------------------
+    public static CatalogoPersonajes getInstancia() { return INSTANCIA; }
 
     /**
-     * Los 23 personajes, agrupados unicamente por genero.
+     * Los 23 personajes, agrupados solo por genero.
      *
      * El espacio de combinaciones es 2 generos x 2 (calvo) x 2 (lentes) x 3
-     * colores = 24. Usamos 23 de esas 24 combinaciones, una sola vez cada una,
-     * asi que NO HAY DOS PERSONAJES IGUALES. Esto garantiza que la maquina
-     * siempre pueda llegar a un unico candidato y nunca tenga que desempatar
-     * al azar. La combinacion que queda afuera es
-     * (femenino, calva, con lentes, pelo amarillo).
+     * colores = 24. Usamos 23 de esas 24, una sola vez cada una, asi que NO HAY
+     * DOS PERSONAJES IGUALES y la maquina nunca tiene que desempatar al azar.
+     * Queda afuera (femenino, calva, con lentes, amarillo).
      */
     private void cargarPersonajes() {
-        // --- 11 mujeres ---
+        // 11 mujeres
         agregar("Alma",      Genero.FEMENINO,  false, false, ColorPelo.COLORADO);
         agregar("Bianca",    Genero.FEMENINO,  false, false, ColorPelo.NEGRO);
         agregar("Carla",     Genero.FEMENINO,  false, false, ColorPelo.AMARILLO);
@@ -97,7 +65,7 @@ public class CatalogoPersonajes {
         agregar("Jimena",    Genero.FEMENINO,  true,  true,  ColorPelo.COLORADO);
         agregar("Keila",     Genero.FEMENINO,  true,  true,  ColorPelo.NEGRO);
 
-        // --- 12 hombres ---
+        // 12 hombres
         agregar("Adrian",    Genero.MASCULINO, false, false, ColorPelo.COLORADO);
         agregar("Bautista",  Genero.MASCULINO, false, false, ColorPelo.NEGRO);
         agregar("Ciro",      Genero.MASCULINO, false, false, ColorPelo.AMARILLO);
@@ -112,129 +80,84 @@ public class CatalogoPersonajes {
         agregar("Matias",    Genero.MASCULINO, true,  true,  ColorPelo.AMARILLO);
     }
 
-    /**
-     * Da de alta un personaje: le asigna el id autoincremental y lo inserta
-     * ordenado. Es el unico lugar donde crece el catalogo.
-     */
+    /** Alta: asigna el id autoincremental e inserta ordenado. */
     private void agregar(String nombre, Genero genero,
                          boolean calvo, boolean usaLentes, ColorPelo colorPelo) {
 
-        Personaje nuevo = new Personaje(siguienteId, nombre, genero, calvo, usaLentes, colorPelo);
-        siguienteId++;
-
+        Personaje nuevo = new Personaje(siguienteId++, nombre, genero, calvo, usaLentes, colorPelo);
         ordenDeCarga.add(nuevo);
         insertarOrdenado(nuevo);
     }
 
-    // ------------------------------------------------------------------
-    // INSERCION BINARIA  (Divide and Conquer)
-    // ------------------------------------------------------------------
-
     /**
-     * Inserta el personaje en la posicion que le corresponde dentro de la lista
-     * ya ordenada.
-     *
-     * La lista 'ordenados' es un INVARIANTE: antes y despues de este metodo
-     * siempre esta ordenada segun Personaje.POR_ATRIBUTOS. Por eso podemos usar
-     * busqueda binaria sobre ella aunque todavia no esten cargados los 23.
+     * La lista 'ordenados' es un invariante: siempre esta ordenada segun
+     * Personaje.POR_ATRIBUTOS, por eso se puede buscar binariamente sobre ella
+     * aunque todavia no esten cargados los 23.
      */
     private void insertarOrdenado(Personaje nuevo) {
-        int posicion = buscarPosicion(nuevo, 0, ordenados.size() - 1, 0);
-        ordenados.add(posicion, nuevo);
+        ordenados.add(buscarPosicion(nuevo, 0, ordenados.size() - 1, 0), nuevo);
     }
 
     /**
-     * Busqueda binaria recursiva: devuelve el indice donde debe insertarse el
-     * personaje para que la lista siga ordenada.
+     * Busqueda binaria recursiva: devuelve el indice donde va el personaje.
      *
-     * ESQUEMA DIVIDE AND CONQUER (el de la catedra):
-     *   CasoBase(x)        -> ini > fin: el rango quedo vacio, la posicion es 'ini'
-     *   SolucionDirecta(x) -> devolver 'ini'
-     *   descomponer(x)     -> partir el rango en dos mitades por el elemento del medio
-     *   combinar           -> no hace falta combinar nada: se sigue por una sola
-     *                         mitad, porque el orden garantiza que la posicion
-     *                         buscada no puede estar en la otra
+     *   CasoBase(x)        -> ini > fin: la posicion es 'ini'
+     *   descomponer(x)     -> partir el rango por el elemento del medio
+     *   combinar           -> no hace falta: el orden garantiza que la posicion
+     *                         no puede estar en la otra mitad
      *
-     * Complejidad: T(n) = T(n/2) + c, que es el caso de division con a=1, b=2,
-     * k=0. Como a = b^k (1 = 2^0), queda Theta(n^k log n) = Theta(log n).
-     *
-     * @param profundidad solo para la traza que se muestra en consola
+     * T(n) = T(n/2) + c -> caso de division con a=1, b=2, k=0. Como a = b^k,
+     * queda Theta(log n).
      */
     private int buscarPosicion(Personaje nuevo, int ini, int fin, int profundidad) {
 
-        // Caso base: no queda rango para dividir. Aca va el personaje.
-        if (ini > fin) {
-            trazaDeCarga.add(String.format(
-                    "  %-10s -> %d comparacion(es), va a la posicion %d",
+        if (ini > fin) {                                    // caso base
+            trazaDeCarga.add(String.format("  %-10s -> %d comparacion(es), va a la posicion %d",
                     nuevo.getNombre(), profundidad, ini));
             return ini;
         }
 
         int medio = (ini + fin) / 2;
-        Personaje delMedio = ordenados.get(medio);
 
-        // Descomponer: nos quedamos con una sola mitad del rango.
-        if (Personaje.POR_ATRIBUTOS.compare(nuevo, delMedio) < 0) {
-            return buscarPosicion(nuevo, ini, medio - 1, profundidad + 1);  // mitad izquierda
+        if (Personaje.POR_ATRIBUTOS.compare(nuevo, ordenados.get(medio)) < 0) {
+            return buscarPosicion(nuevo, ini, medio - 1, profundidad + 1);
         } else {
-            return buscarPosicion(nuevo, medio + 1, fin, profundidad + 1);  // mitad derecha
+            return buscarPosicion(nuevo, medio + 1, fin, profundidad + 1);
         }
     }
 
-    // ------------------------------------------------------------------
-    // VERIFICACION
-    // ------------------------------------------------------------------
-
     /**
-     * Chequea que no haya dos personajes con la misma combinacion de atributos.
-     * Si fallara, la maquina podria quedar con candidatos empatados y sin
-     * ninguna pregunta capaz de separarlos. Preferimos que el programa reviente
-     * al arrancar antes que descubrirlo en medio de la defensa.
+     * Chequea que no haya dos personajes con los mismos atributos. Si fallara,
+     * la maquina podria quedar con candidatos empatados y sin ninguna pregunta
+     * capaz de separarlos.
      */
     private void verificarUnicidad() {
         Set<String> vistas = new HashSet<>();
         for (Personaje p : ordenDeCarga) {
             if (!vistas.add(p.claveAtributos())) {
-                throw new IllegalStateException(
-                        "Personaje duplicado en el catalogo: " + p.getNombre());
+                throw new IllegalStateException("Personaje duplicado: " + p.getNombre());
             }
         }
         if (ordenDeCarga.size() != CANTIDAD_PERSONAJES) {
-            throw new IllegalStateException(
-                    "El catalogo debe tener " + CANTIDAD_PERSONAJES +
-                    " personajes y tiene " + ordenDeCarga.size());
+            throw new IllegalStateException("El catalogo debe tener " + CANTIDAD_PERSONAJES
+                    + " personajes y tiene " + ordenDeCarga.size());
         }
     }
 
-    // ------------------------------------------------------------------
-    // ACCESO
-    // ------------------------------------------------------------------
+    /** Lista en orden de alta (agrupada por genero): el tablero inicial. */
+    public List<Personaje> getOrdenDeCarga() { return new ArrayList<>(ordenDeCarga); }
 
-    /** Copia de la lista en orden de alta (agrupada por genero): el tablero inicial. */
-    public List<Personaje> getOrdenDeCarga() {
-        return new ArrayList<>(ordenDeCarga);
-    }
+    /** Lista ordenada por atributos: la vista interna de la maquina. */
+    public List<Personaje> getOrdenados() { return new ArrayList<>(ordenados); }
 
-    /** Copia de la lista ordenada por atributos: la vista interna de la maquina. */
-    public List<Personaje> getOrdenados() {
-        return new ArrayList<>(ordenados);
-    }
+    public List<String> getTrazaDeCarga() { return new ArrayList<>(trazaDeCarga); }
 
-    /** Traza paso a paso de la insercion binaria, para mostrar en consola. */
-    public List<String> getTrazaDeCarga() {
-        return new ArrayList<>(trazaDeCarga);
-    }
+    public int getCantidad() { return ordenDeCarga.size(); }
 
     public Personaje buscarPorNombre(String nombre) {
         for (Personaje p : ordenDeCarga) {
-            if (p.getNombre().equalsIgnoreCase(nombre.trim())) {
-                return p;
-            }
+            if (p.getNombre().equalsIgnoreCase(nombre.trim())) return p;
         }
         return null;
-    }
-
-    public int getCantidad() {
-        return ordenDeCarga.size();
     }
 }

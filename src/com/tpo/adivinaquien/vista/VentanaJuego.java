@@ -12,18 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ===========================================================================
- * LA VISTA SWING
- * ===========================================================================
+ * VISTA SWING. Igual que JuegoConsola, solo presentacion: dibuja componentes y
+ * escucha clics. Cada accion del usuario se la pasa a ControladorPartida.
  *
- * Igual que JuegoConsola, esta clase es UNICAMENTE presentacion: dibuja
- * componentes y escucha clics. No decide nada del juego. Cada vez que el
- * usuario hace algo, se lo pasa a ControladorPartida, que llama al motor.
- *
- * Los 23 personajes y los 6 botones de pregunta NO estan en el formulario:
- * se generan aca por codigo dentro de panelTablero y panelFiltros, que en el
- * .form quedaron vacios a proposito. Asi, si maniana se agrega un filtro o un
- * personaje, no hay que redibujar nada en el disenador.
+ * Los 23 personajes y los 6 botones de pregunta no estan en el formulario: se
+ * generan por codigo dentro de panelTablero y panelFiltros, que en el .form
+ * quedan vacios. Asi, agregar un filtro no obliga a redibujar nada.
  */
 public class VentanaJuego implements ControladorPartida.Observador {
 
@@ -72,19 +66,12 @@ public class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Reacomoda los componentes que creo el GUI Designer.
+     * Arma el layout definitivo con BorderLayout y JScrollPane.
      *
-     * POR QUE ESTA ESTE METODO
-     * El .form define QUE componentes existen y con que nombre; eso es lo que
-     * se disenia visualmente. Pero el GridLayoutManager del disenador reparte
-     * el espacio en celdas fijas, y con un tablero de 23 tarjetas mas un panel
-     * de razonamiento que crece, los botones de pregunta quedaban fuera de la
-     * pantalla.
-     *
-     * Aca se toman esos mismos componentes y se reorganizan con BorderLayout y
-     * JScrollPane, que reparten el espacio de forma proporcional y agregan
-     * barras de desplazamiento cuando hace falta. Asi la ventana se ve bien en
-     * cualquier resolucion, sin tocar el .form.
+     * El .form define QUE componentes existen. El GridLayoutManager del
+     * disenador reparte el espacio en celdas fijas y con 23 tarjetas mas un
+     * panel de texto que crece dejaba los botones fuera de pantalla;
+     * BorderLayout reparte proporcionalmente y el scroll evita los cortes.
      */
     private void reorganizarLayout() {
         panelPrincipal.removeAll();
@@ -237,11 +224,8 @@ public class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Muestra la evaluacion greedy aplicada al tablero de la persona.
-     *
-     * No juega por ella: le muestra el mismo calculo que hace la maquina para
-     * que pueda comparar su decision con la del algoritmo. Es la funcion que
-     * sirve para explicar el criterio greedy en la defensa oral.
+     * Muestra la evaluacion greedy sobre el tablero de la persona. No juega por
+     * ella: permite comparar la decision humana con la del algoritmo.
      */
     private void mostrarSugerencias() {
         List<EvaluacionFiltro> sugerencias = controlador.sugerencias();
@@ -298,11 +282,8 @@ public class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Tacha en gris los personajes que ya fueron descartados.
-     *
-     * Esto es Divide and Conquer hecho visible: los que quedan son el
-     * subconjunto que sobrevivio a todas las respuestas; los tachados son las
-     * ramas que se descartaron enteras.
+     * Tacha en gris los personajes descartados. Es D&C hecho visible: lo verde
+     * es el subconjunto que sobrevivio, lo gris son las ramas descartadas.
      */
     private void pintarTablero() {
         if (!controlador.hayPartida()) {

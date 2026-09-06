@@ -8,13 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Base de las maquinas. Aporta lo unico que un humano no necesita: decidir sola
- * que jugar en su turno.
- *
- * El Divide and Conquer (descomponer / combinar / caso base) esta en Jugador,
- * la clase padre, porque el tablero del humano se achica con el mismo
- * algoritmo. Lo que se agrega aca es la eleccion de la pregunta, que es donde
- * cada maquina aplica su propio criterio.
+ * Base de las maquinas. Lo unico que agrega sobre Jugador es decidir sola que
+ * jugar; el Divide and Conquer esta en la clase padre.
  */
 public abstract class JugadorMaquina extends Jugador {
 
@@ -23,79 +18,44 @@ public abstract class JugadorMaquina extends Jugador {
     }
 
     @Override
-    public boolean esMaquina() {
-        return true;
-    }
-
-    // ==================================================================
-    // FILTROS DISPONIBLES
-    // ==================================================================
+    public boolean esMaquina() { return true; }
 
     /**
-     * Los filtros que todavia se pueden preguntar.
-     *
-     * Descarta dos cosas:
-     *   1. los que esta maquina ya pregunto (no aportarian nada nuevo); y
-     *   2. los que sobre los candidatos actuales dejan un lado vacio, o sea que
-     *      la respuesta ya se conoce de antemano. Ejemplo: si ya sabemos que
-     *      todos los candidatos que quedan tienen el pelo amarillo, preguntar
-     *      "tiene el pelo amarillo?" gasta un turno sin descartar a nadie.
-     *      Esta es la FUNCION DE FACTIBILIDAD del esquema greedy.
+     * FUNCION DE FACTIBILIDAD del esquema greedy. Descarta los filtros ya
+     * preguntados y los que dejarian un lado vacio (su respuesta ya se conoce,
+     * asi que gastarian un turno sin descartar a nadie).
      */
     protected List<Filtro> filtrosFactibles() {
         List<Filtro> factibles = new ArrayList<>();
 
         for (Filtro f : CatalogoFiltros.todos()) {
-            if (filtrosUsados.contains(f.getClave())) {
-                continue;
-            }
-            if (aplicaFactibilidad() && descomponer(candidatos, f).esInutil()) {
-                continue;
-            }
+            if (filtrosUsados.contains(f.getClave())) continue;
+            if (aplicaFactibilidad() && descomponer(candidatos, f).esInutil()) continue;
             factibles.add(f);
         }
         return factibles;
     }
 
     /**
-     * Si esta maquina aplica o no la funcion de factibilidad.
-     *
-     * La factibilidad es UNO DE LOS CINCO ELEMENTOS del esquema greedy, no una
-     * optimizacion generica: requiere evaluar la particion de cada filtro
-     * contra los candidatos actuales, que es justamente el trabajo que una
-     * busqueda ingenua no hace. Por eso una maquina puramente secuencial la
-     * tiene desactivada.
-     *
-     * Tenerlo como metodo redefinible nos permite medir por separado cuanto
-     * aporta cada elemento del greedy. Ver SimulacionEstrategias.
+     * Si aplica o no la factibilidad. Redefinible para poder medir por separado
+     * cuanto aporta cada elemento del greedy (ver SimulacionEstrategias).
      */
-    protected boolean aplicaFactibilidad() {
-        return true;
-    }
-
-    // ==================================================================
-    // DECISION DEL TURNO
-    // ==================================================================
+    protected boolean aplicaFactibilidad() { return true; }
 
     /**
-     * Que hace la maquina en su turno.
-     *
-     * La estructura es siempre la misma (es el esquema D&C); lo que cambia
-     * entre MaquinaGreedy y MaquinaSecuencial es UNICAMENTE como se elige el
-     * filtro. Por eso ese paso queda abstracto.
+     * El turno de la maquina. La estructura es siempre la misma (el esquema
+     * D&C); lo unico que cambia entre estrategias es elegirFiltro().
      */
     public Jugada jugarTurno() {
 
-        // CasoBase(x) -> SolucionDirecta(x)
-        if (esCasoBase()) {
+        if (esCasoBase()) {                       // CasoBase(x)
             registro.registrar(String.format(
                     "    [%s] CASO BASE: queda 1 candidato -> lanzo la suposicion.", getNombre()));
-            return solucionDirecta();
+            return solucionDirecta();             // SolucionDirecta(x)
         }
 
         List<Filtro> factibles = filtrosFactibles();
 
-        // Sin filtros utiles no hay forma de seguir achicando: se arriesga.
         if (factibles.isEmpty()) {
             registro.registrar(String.format(
                     "    [%s] No quedan filtros que aporten informacion -> arriesgo.", getNombre()));
@@ -105,9 +65,6 @@ public abstract class JugadorMaquina extends Jugador {
         return new PreguntaFiltro(elegirFiltro(factibles));
     }
 
-    /**
-     * El criterio propio de cada maquina para elegir que preguntar.
-     * Es el unico punto donde las dos estrategias se diferencian.
-     */
+    /** FUNCION DE SELECCION: el criterio propio de cada estrategia. */
     protected abstract Filtro elegirFiltro(List<Filtro> factibles);
 }

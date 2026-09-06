@@ -16,26 +16,15 @@ import com.tpo.adivinaquien.modelo.Personaje;
 import java.util.List;
 
 /**
- * ===========================================================================
- * EL PUENTE ENTRE LA VENTANA Y EL MOTOR
- * ===========================================================================
+ * Puente entre la ventana y el motor. La ventana solo dibuja y escucha clics;
+ * la coordinacion de la partida vive aca.
  *
- * La ventana de Swing (VentanaJuego) solo dibuja y escucha clics. Toda la
- * coordinacion de la partida vive aca. Asi la clase generada por el GUI
- * Designer queda limpia y la logica queda en una clase normal, testeable y
- * facil de mostrar en la defensa.
+ * Hace falta porque en Swing no hay bucle de turnos: cada clic dispara un turno
+ * y la ventana vuelve a esperar. Este controlador se encarga de que, apenas
+ * termina el turno del humano, la maquina juegue el suyo.
  *
- * POR QUE HACE FALTA ESTA CLASE Y NO ALCANZA CON PARTIDA
- * En consola el bucle de turnos lo maneja el while del menu. En Swing no hay
- * bucle: cada clic dispara un turno y despues la ventana vuelve a quedar
- * esperando. Este controlador es el que se encarga de que, apenas termina el
- * turno del humano, la maquina juegue el suyo automaticamente, y de avisarle a
- * la ventana que se tiene que redibujar.
- *
- * NO CONTIENE NADA DE ALGORITMICA
- * No hay ni una decision de juego aca: preguntar que preguntar es de
- * MaquinaGreedy, achicar candidatos es de Jugador, resolver el turno es de
- * Partida. Esta clase solo los llama en orden.
+ * No contiene ninguna decision de juego: solo llama en orden a MaquinaGreedy,
+ * Jugador y Partida.
  */
 public class ControladorPartida {
 
@@ -67,12 +56,7 @@ public class ControladorPartida {
     // ARRANQUE
     // ------------------------------------------------------------------
 
-    /**
-     * Empieza una partida nueva.
-     *
-     * @param secretoDelHumano el personaje que eligio la persona y que la
-     *                         maquina tiene que adivinar
-     */
+    /** @param secretoDelHumano el personaje que la maquina tiene que adivinar. */
     public void nuevaPartida(Personaje secretoDelHumano) {
         humano = new JugadorHumano("VOS", registro);
         maquina = new MaquinaGreedy("MAQUINA", registro);
@@ -103,10 +87,7 @@ public class ControladorPartida {
         jugar(new Suposicion(candidato));
     }
 
-    /**
-     * Aplica la jugada del humano y, si la partida sigue, deja que la maquina
-     * juegue su turno.
-     */
+    /** Aplica la jugada del humano y, si sigue la partida, juega la maquina. */
     private void jugar(Jugada jugada) {
         if (partida == null || partida.haTerminado()) {
             return;
@@ -181,11 +162,7 @@ public class ControladorPartida {
         return humano == null ? List.of() : humano.filtrosDisponibles();
     }
 
-    /**
-     * La evaluacion greedy aplicada al tablero de la persona, ordenada de mejor
-     * a peor. No juega por ella: solo le muestra el mismo calculo que hace la
-     * maquina para que pueda comparar su decision con la del algoritmo.
-     */
+    /** Evaluacion greedy sobre el tablero de la persona, de mejor a peor. */
     public List<EvaluacionFiltro> sugerencias() {
         return humano == null ? List.of() : humano.sugerencias();
     }

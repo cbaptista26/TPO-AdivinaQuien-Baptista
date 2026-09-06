@@ -4,11 +4,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * El resultado de partir un conjunto de candidatos en dos con un filtro.
- *
- * Es lo que devuelve descomponer(x) en el esquema Divide and Conquer de la
- * catedra: el conjunto original queda separado en dos subconjuntos disjuntos
- * (ningun personaje puede estar en los dos) cuya union es el conjunto original.
+ * El resultado de partir un conjunto de candidatos con un filtro: lo que
+ * devuelve descomponer(x) en el esquema D&C. Los dos subconjuntos son disjuntos
+ * y su union es el conjunto original.
  */
 public class Particion {
 
@@ -28,32 +26,23 @@ public class Particion {
     public int total()             { return cumplen.size() + noCumplen.size(); }
 
     /**
-     * El grupo mas grande de los dos: cuantos candidatos quedarian si la
-     * respuesta fuera la peor posible.
-     *
-     * Esta es la funcion que usa el greedy para comparar filtros. Como la
-     * maquina no sabe que va a responder el rival, no puede optimizar el caso
-     * favorable; lo unico que puede controlar es que tan mal le puede ir.
+     * El grupo mas grande: cuantos candidatos quedarian si la respuesta fuera la
+     * peor posible. Es la funcion que usa el greedy para comparar filtros.
      */
     public int peorCaso() {
         return Math.max(cumplen.size(), noCumplen.size());
     }
 
     /**
-     * combinar(): se queda con el subconjunto que corresponde a la respuesta
-     * que efectivamente dio el rival, y descarta el otro.
-     *
-     * En el esquema generico de D&C aca iria una mezcla de las soluciones de
-     * todas las ramas. En este problema no hace falta recorrer las dos ramas:
-     * la respuesta del rival nos dice cual de las dos contiene al personaje
-     * secreto, asi que la otra se descarta entera. Es la misma simplificacion
-     * que hace la busqueda binaria del apunte.
+     * combinar(): se queda con el subconjunto de la respuesta real y descarta el
+     * otro entero. No hace falta recorrer las dos ramas porque la respuesta dice
+     * cual contiene al secreto (misma simplificacion que la busqueda binaria).
      */
     public List<Personaje> combinar(boolean respuesta) {
         return respuesta ? cumplen : noCumplen;
     }
 
-    /** True si el filtro no separo nada: los candidatos quedaron todos de un lado. */
+    /** True si el filtro no separo nada: todos los candidatos de un lado. */
     public boolean esInutil() {
         return cumplen.isEmpty() || noCumplen.isEmpty();
     }
