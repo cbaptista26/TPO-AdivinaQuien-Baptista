@@ -65,7 +65,37 @@ public class VentanaJuego implements ControladorPartida.Observador {
     // ARRANQUE
     // -----------------------------------------------------------------
 
+    /**
+     * Crea los componentes que declara el formulario.
+     *
+     * El diseno visual se hizo con el Swing UI Designer y quedo guardado en
+     * VentanaJuego.form. La instanciacion se hace aca por codigo y no con el
+     * metodo que genera el disenador, porque ese metodo depende de forms_rt.jar
+     * (una libreria interna de IntelliJ) y el proyecto no compilaria fuera del
+     * IDE. No se pierde nada: el layout definitivo lo arma reorganizarLayout(),
+     * cuya primera instruccion es panelPrincipal.removeAll().
+     */
+    private void crearComponentes() {
+        panelPrincipal  = new JPanel();
+        lblTurno        = new JLabel("Turno");
+        lblCandidatos   = new JLabel("Candidatos: 23");
+        btnNuevaPartida = new JButton("Iniciar");
+        panelTablero    = new JPanel();
+        panelFiltros    = new JPanel();
+        btnArriesgar    = new JButton("Arriesgar");
+        btnSugerencia   = new JButton("\u00bfQue preguntaria la maquina?");
+        txtRazonamiento = new JTextArea();
+
+        comboModo = new JComboBox<>(new String[]{
+                "1 - Jugador vs Maquina",
+                "2 - Maquina vs Maquina",
+                "3 - Simulacion de las 23 partidas",
+                "4 - Verificar catalogo e insercion binaria"
+        });
+    }
+
     public VentanaJuego() {
+        crearComponentes();
         registro = new RegistroSwing(txtRazonamiento);
         controlador = new ControladorPartida(registro, this);
 
@@ -75,7 +105,6 @@ public class VentanaJuego implements ControladorPartida.Observador {
         reorganizarLayout();
         construirTablero();
 
-        btnNuevaPartida.setText("Iniciar");
         btnNuevaPartida.addActionListener(e -> iniciarModoElegido());
         btnArriesgar.addActionListener(e -> pedirSuposicion());
         btnSugerencia.addActionListener(e -> mostrarSugerencias());
@@ -84,19 +113,12 @@ public class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Reacomoda los componentes que creo el GUI Designer.
+     * Arma el layout definitivo con BorderLayout y JScrollPane.
      *
-     * POR QUE ESTA ESTE METODO
-     * El .form define QUE componentes existen y con que nombre; eso es lo que
-     * se disenia visualmente. Pero el GridLayoutManager del disenador reparte
-     * el espacio en celdas fijas, y con un tablero de 23 tarjetas mas un panel
-     * de razonamiento que crece, los botones de pregunta quedaban fuera de la
-     * pantalla.
-     *
-     * Aca se toman esos mismos componentes y se reorganizan con BorderLayout y
-     * JScrollPane, que reparten el espacio de forma proporcional y agregan
-     * barras de desplazamiento cuando hace falta. Asi la ventana se ve bien en
-     * cualquier resolucion, sin tocar el .form.
+     * El .form define QUE componentes existen. Su GridLayoutManager reparte el
+     * espacio en celdas fijas y con 23 tarjetas mas un panel de texto que crece
+     * dejaba los botones fuera de pantalla; BorderLayout reparte de forma
+     * proporcional y el scroll evita los cortes.
      */
     private void reorganizarLayout() {
         panelPrincipal.removeAll();
