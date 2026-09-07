@@ -12,12 +12,21 @@ import java.util.Set;
 /**
  * Carga los 23 personajes y arma la lista ordenada de la maquina.
  *
- * El enunciado pide que los personajes empiecen ordenados solo por genero y que
- * la maquina los disponga en una lista ordenada de forma autoincremental segun
- * se agregan. Cada alta recibe un id incremental y se INSERTA en su posicion
- * usando busqueda binaria (ver buscarPosicion): Divide and Conquer aplicado a
- * la carga. Ver seccion 5 de la documentacion, que explica ademas por que no se
- * uso MergeSort.
+ * DOS SITUACIONES DISTINTAS, DOS ALGORITMOS
+ *
+ * 1) ORDENAMIENTO INICIAL DEL LOTE: los 23 personajes se declaran juntos y
+ *    llegan agrupados solo por genero. Como se tiene el conjunto completo de
+ *    entrada, se ordena con MERGESORT: Theta(n log n) garantizado, sin
+ *    depender de como vengan los datos. Ver OrdenadorPersonajes.mergeSort().
+ *
+ * 2) ALTA INDIVIDUAL POSTERIOR: si despues se agrega un personaje suelto, no
+ *    conviene reordenar todo de nuevo. Se lo INSERTA en su posicion usando
+ *    BUSQUEDA BINARIA: Theta(log n) para ubicar el lugar mas Theta(n) para
+ *    desplazar. Ver buscarPosicion().
+ *
+ * Los dos son Divide and Conquer, aplicados a situaciones distintas. El
+ * programa verifica al arrancar que ambos caminos produzcan exactamente la
+ * misma lista ordenada.
  */
 public class CatalogoPersonajes {
 
@@ -36,9 +45,44 @@ public class CatalogoPersonajes {
     /** Traza de la insercion binaria, para mostrarla en consola. */
     private final List<String> trazaDeCarga = new ArrayList<>();
 
+    /** La lista ordenada con MergeSort sobre el lote completo. */
+    private final List<Personaje> ordenadosPorMergeSort = new ArrayList<>();
+
     private CatalogoPersonajes() {
         cargarPersonajes();
+        ordenarLoteInicial();
         verificarUnicidad();
+        verificarQueAmbosCaminosCoincidan();
+    }
+
+    /**
+     * Ordenamiento inicial del lote completo con MergeSort.
+     *
+     * Es el caso para el que MergeSort sirve: se tienen los 23 personajes de
+     * entrada al mismo tiempo, asi que se puede partir el conjunto a la mitad.
+     */
+    private void ordenarLoteInicial() {
+        ordenadosPorMergeSort.addAll(
+                OrdenadorPersonajes.mergeSort(ordenDeCarga, Personaje.POR_ATRIBUTOS));
+    }
+
+    /**
+     * Comprueba que ordenar el lote con MergeSort y construir la lista
+     * insertando de a uno con busqueda binaria den el mismo resultado.
+     *
+     * Sirve como verificacion cruzada: si los dos algoritmos coinciden sobre
+     * los 23 personajes, es muy poco probable que alguno este mal implementado.
+     */
+    private void verificarQueAmbosCaminosCoincidan() {
+        if (ordenadosPorMergeSort.size() != ordenados.size()) {
+            throw new IllegalStateException("Las dos listas ordenadas tienen distinto tamanio.");
+        }
+        for (int i = 0; i < ordenados.size(); i++) {
+            if (ordenadosPorMergeSort.get(i).getId() != ordenados.get(i).getId()) {
+                throw new IllegalStateException(
+                        "MergeSort y la insercion binaria difieren en la posicion " + i);
+            }
+        }
     }
 
     public static CatalogoPersonajes getInstancia() { return INSTANCIA; }
@@ -149,6 +193,11 @@ public class CatalogoPersonajes {
 
     /** Lista ordenada por atributos: la vista interna de la maquina. */
     public List<Personaje> getOrdenados() { return new ArrayList<>(ordenados); }
+
+    /** La misma lista, pero obtenida ordenando el lote completo con MergeSort. */
+    public List<Personaje> getOrdenadosPorMergeSort() {
+        return new ArrayList<>(ordenadosPorMergeSort);
+    }
 
     public List<String> getTrazaDeCarga() { return new ArrayList<>(trazaDeCarga); }
 
