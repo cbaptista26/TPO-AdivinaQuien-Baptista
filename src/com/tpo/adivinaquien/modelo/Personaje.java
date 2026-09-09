@@ -62,7 +62,7 @@ public class Personaje {
 
     @Override
     public String toString() {
-        return String.format("[%2d] %-10s | %-6s | %-8s | %-10s | pelo %s",
+        return String.format("[%2d] %-20s | %-6s | %-8s | %-10s | pelo %s",
                 id,
                 nombre,
                 genero.getEtiqueta(),

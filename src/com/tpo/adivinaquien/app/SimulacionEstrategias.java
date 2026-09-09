@@ -29,9 +29,9 @@ public class SimulacionEstrategias {
         List<Personaje> todos = CatalogoPersonajes.getInstancia().getOrdenDeCarga();
 
         // ---------- 1. Una partida detallada, para ver el razonamiento ----------
-        titulo("PARTIDA DE EJEMPLO CON TRAZA COMPLETA (secreto: Hugo)");
+        titulo("PARTIDA DE EJEMPLO CON TRAZA COMPLETA (secreto: Profesor Hadrian)");
         RegistroRazonamiento consola = new RegistroConsola();
-        Personaje secreto = CatalogoPersonajes.getInstancia().buscarPorNombre("Hugo");
+        Personaje secreto = CatalogoPersonajes.getInstancia().buscarPorNombre("Profesor Hadrian");
         Oraculo oraculo = new OraculoPersonaje(secreto);
 
         MaquinaGreedy greedy = new MaquinaGreedy("GREEDY", consola);

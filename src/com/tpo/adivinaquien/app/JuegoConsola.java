@@ -27,7 +27,7 @@ public class JuegoConsola {
     }
 
     public void ejecutar() {
-        titulo("ADIVINA QUIEN - TPO Programacion III | Divide and Conquer + Greedy");
+        titulo("ADIVINA QUIEN: ACADEMIA UMBRALUZ | Divide and Conquer + Greedy");
 
         boolean seguir = true;
         while (seguir) {

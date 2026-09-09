@@ -88,40 +88,45 @@ public class CatalogoPersonajes {
     public static CatalogoPersonajes getInstancia() { return INSTANCIA; }
 
     /**
-     * Los 23 personajes, agrupados solo por genero.
+     * Los 23 personajes de la Academia Umbraluz, agrupados solo por genero.
      *
      * El espacio de combinaciones es 2 generos x 2 (calvo) x 2 (lentes) x 3
      * colores = 24. Usamos 23 de esas 24, una sola vez cada una, asi que NO HAY
      * DOS PERSONAJES IGUALES y la maquina nunca tiene que desempatar al azar.
      * Queda afuera (femenino, calva, con lentes, amarillo).
+     *
+     * El prefijo del nombre es pura ambientacion, no un atributo nuevo: es
+     * "Profesor/a" cuando el personaje es calvo y "Aprendiz/a" cuando no, asi
+     * que reutiliza el filtro de calvicie que ya existe en vez de agregar un
+     * campo que el enunciado no pide.
      */
     private void cargarPersonajes() {
-        // 11 mujeres
-        agregar("Alma",      Genero.FEMENINO,  false, false, ColorPelo.COLORADO);
-        agregar("Bianca",    Genero.FEMENINO,  false, false, ColorPelo.NEGRO);
-        agregar("Carla",     Genero.FEMENINO,  false, false, ColorPelo.AMARILLO);
-        agregar("Delfina",   Genero.FEMENINO,  false, true,  ColorPelo.COLORADO);
-        agregar("Emma",      Genero.FEMENINO,  false, true,  ColorPelo.NEGRO);
-        agregar("Fatima",    Genero.FEMENINO,  false, true,  ColorPelo.AMARILLO);
-        agregar("Greta",     Genero.FEMENINO,  true,  false, ColorPelo.COLORADO);
-        agregar("Hilda",     Genero.FEMENINO,  true,  false, ColorPelo.NEGRO);
-        agregar("Ivana",     Genero.FEMENINO,  true,  false, ColorPelo.AMARILLO);
-        agregar("Jimena",    Genero.FEMENINO,  true,  true,  ColorPelo.COLORADO);
-        agregar("Keila",     Genero.FEMENINO,  true,  true,  ColorPelo.NEGRO);
+        // 11 aprendizas y profesoras
+        agregar("Aprendiza Aurelia",   Genero.FEMENINO,  false, false, ColorPelo.COLORADO);
+        agregar("Aprendiza Briseida",  Genero.FEMENINO,  false, false, ColorPelo.NEGRO);
+        agregar("Aprendiza Cassandra", Genero.FEMENINO,  false, false, ColorPelo.AMARILLO);
+        agregar("Aprendiza Delphine",  Genero.FEMENINO,  false, true,  ColorPelo.COLORADO);
+        agregar("Aprendiza Elowen",    Genero.FEMENINO,  false, true,  ColorPelo.NEGRO);
+        agregar("Aprendiza Faelynn",   Genero.FEMENINO,  false, true,  ColorPelo.AMARILLO);
+        agregar("Profesora Griselda",  Genero.FEMENINO,  true,  false, ColorPelo.COLORADO);
+        agregar("Profesora Hesper",    Genero.FEMENINO,  true,  false, ColorPelo.NEGRO);
+        agregar("Profesora Ivessa",    Genero.FEMENINO,  true,  false, ColorPelo.AMARILLO);
+        agregar("Profesora Jezra",     Genero.FEMENINO,  true,  true,  ColorPelo.COLORADO);
+        agregar("Profesora Kaelith",   Genero.FEMENINO,  true,  true,  ColorPelo.NEGRO);
 
-        // 12 hombres
-        agregar("Adrian",    Genero.MASCULINO, false, false, ColorPelo.COLORADO);
-        agregar("Bautista",  Genero.MASCULINO, false, false, ColorPelo.NEGRO);
-        agregar("Ciro",      Genero.MASCULINO, false, false, ColorPelo.AMARILLO);
-        agregar("Damian",    Genero.MASCULINO, false, true,  ColorPelo.COLORADO);
-        agregar("Ezequiel",  Genero.MASCULINO, false, true,  ColorPelo.NEGRO);
-        agregar("Facundo",   Genero.MASCULINO, false, true,  ColorPelo.AMARILLO);
-        agregar("Gaspar",    Genero.MASCULINO, true,  false, ColorPelo.COLORADO);
-        agregar("Hugo",      Genero.MASCULINO, true,  false, ColorPelo.NEGRO);
-        agregar("Ivan",      Genero.MASCULINO, true,  false, ColorPelo.AMARILLO);
-        agregar("Joaquin",   Genero.MASCULINO, true,  true,  ColorPelo.COLORADO);
-        agregar("Lisandro",  Genero.MASCULINO, true,  true,  ColorPelo.NEGRO);
-        agregar("Matias",    Genero.MASCULINO, true,  true,  ColorPelo.AMARILLO);
+        // 12 aprendices y profesores
+        agregar("Aprendiz Aldric",     Genero.MASCULINO, false, false, ColorPelo.COLORADO);
+        agregar("Aprendiz Baltasar",   Genero.MASCULINO, false, false, ColorPelo.NEGRO);
+        agregar("Aprendiz Ciro",       Genero.MASCULINO, false, false, ColorPelo.AMARILLO);
+        agregar("Aprendiz Draven",     Genero.MASCULINO, false, true,  ColorPelo.COLORADO);
+        agregar("Aprendiz Ewald",      Genero.MASCULINO, false, true,  ColorPelo.NEGRO);
+        agregar("Aprendiz Fenwick",    Genero.MASCULINO, false, true,  ColorPelo.AMARILLO);
+        agregar("Profesor Gideon",     Genero.MASCULINO, true,  false, ColorPelo.COLORADO);
+        agregar("Profesor Hadrian",    Genero.MASCULINO, true,  false, ColorPelo.NEGRO);
+        agregar("Profesor Ivor",       Genero.MASCULINO, true,  false, ColorPelo.AMARILLO);
+        agregar("Profesor Joran",      Genero.MASCULINO, true,  true,  ColorPelo.COLORADO);
+        agregar("Profesor Lysander",   Genero.MASCULINO, true,  true,  ColorPelo.NEGRO);
+        agregar("Profesor Magnus",     Genero.MASCULINO, true,  true,  ColorPelo.AMARILLO);
     }
 
     /** Alta: asigna el id autoincremental e inserta ordenado. */
@@ -156,7 +161,7 @@ public class CatalogoPersonajes {
     private int buscarPosicion(Personaje nuevo, int ini, int fin, int profundidad) {
 
         if (ini > fin) {                                    // caso base
-            trazaDeCarga.add(String.format("  %-10s -> %d comparacion(es), va a la posicion %d",
+            trazaDeCarga.add(String.format("  %-20s -> %d comparacion(es), va a la posicion %d",
                     nuevo.getNombre(), profundidad, ini));
             return ini;
         }
