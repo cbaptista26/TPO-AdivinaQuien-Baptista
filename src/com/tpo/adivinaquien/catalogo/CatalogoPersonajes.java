@@ -5,9 +5,7 @@ import com.tpo.adivinaquien.modelo.Genero;
 import com.tpo.adivinaquien.modelo.Personaje;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Carga los 23 personajes y arma la lista ordenada de la maquina.
@@ -51,8 +49,8 @@ public class CatalogoPersonajes {
     private CatalogoPersonajes() {
         cargarPersonajes();
         ordenarLoteInicial();
-        verificarUnicidad();
-        verificarQueAmbosCaminosCoincidan();
+        VerificadorCatalogo.verificarUnicidad(ordenDeCarga, CANTIDAD_PERSONAJES);
+        VerificadorCatalogo.verificarQueCoincidan(ordenadosPorMergeSort, ordenados);
     }
 
     /**
@@ -66,34 +64,29 @@ public class CatalogoPersonajes {
                 OrdenadorPersonajes.mergeSort(ordenDeCarga, Personaje.POR_ATRIBUTOS));
     }
 
-    /**
-     * Comprueba que ordenar el lote con MergeSort y construir la lista
-     * insertando de a uno con busqueda binaria den el mismo resultado.
-     *
-     * Sirve como verificacion cruzada: si los dos algoritmos coinciden sobre
-     * los 23 personajes, es muy poco probable que alguno este mal implementado.
-     */
-    private void verificarQueAmbosCaminosCoincidan() {
-        if (ordenadosPorMergeSort.size() != ordenados.size()) {
-            throw new IllegalStateException("Las dos listas ordenadas tienen distinto tamanio.");
-        }
-        for (int i = 0; i < ordenados.size(); i++) {
-            if (ordenadosPorMergeSort.get(i).getId() != ordenados.get(i).getId()) {
-                throw new IllegalStateException(
-                        "MergeSort y la insercion binaria difieren en la posicion " + i);
-            }
-        }
-    }
 
     public static CatalogoPersonajes getInstancia() { return INSTANCIA; }
 
     /**
-     * Los 23 personajes de la Academia Umbraluz, agrupados solo por genero.
+     * Los 23 personajes de la Academia Umbraluz, agrupados solo por genero como
+     * pide el enunciado.
      *
-     * El espacio de combinaciones es 2 generos x 2 (calvo) x 2 (lentes) x 3
-     * colores = 24. Usamos 23 de esas 24, una sola vez cada una, asi que NO HAY
-     * DOS PERSONAJES IGUALES y la maquina nunca tiene que desempatar al azar.
-     * Queda afuera (femenino, calva, con lentes, amarillo).
+     * Aca esta la cuenta que me ordeno todo el catalogo. Los atributos dan
+     * 2 generos x 2 (rapado) x 2 (anteojos) x 3 colores = 24 combinaciones
+     * posibles, y el enunciado pide 23 personajes: entran justo, uno por
+     * combinacion, y sobra una.
+     *
+     * Aproveche eso y uso 23 combinaciones DISTINTAS, ninguna repetida. La
+     * consecuencia practica es que la maquina siempre termina con un unico
+     * candidato y nunca tiene que adivinar al azar.
+     *
+     * Mi primera version hacia que los rapados no tuvieran color de pelo, que me
+     * parecia mas realista. Al hacer la cuenta vi que eso bajaba las
+     * combinaciones a 16, y con 23 personajes forzosamente iban a quedar
+     * personajes identicos, imposibles de separar con ninguna pregunta. Por eso
+     * les dejo color, que se entiende como el de las cejas o la barba.
+     *
+     * La combinacion que queda afuera es (bruja, rapada, con anteojos, amarillo).
      *
      * El prefijo del nombre es pura ambientacion, no un atributo nuevo: es
      * "Profesor/a" cuando el personaje es calvo y "Aprendiz/a" cuando no, asi
@@ -175,23 +168,6 @@ public class CatalogoPersonajes {
         }
     }
 
-    /**
-     * Chequea que no haya dos personajes con los mismos atributos. Si fallara,
-     * la maquina podria quedar con candidatos empatados y sin ninguna pregunta
-     * capaz de separarlos.
-     */
-    private void verificarUnicidad() {
-        Set<String> vistas = new HashSet<>();
-        for (Personaje p : ordenDeCarga) {
-            if (!vistas.add(p.claveAtributos())) {
-                throw new IllegalStateException("Personaje duplicado: " + p.getNombre());
-            }
-        }
-        if (ordenDeCarga.size() != CANTIDAD_PERSONAJES) {
-            throw new IllegalStateException("El catalogo debe tener " + CANTIDAD_PERSONAJES
-                    + " personajes y tiene " + ordenDeCarga.size());
-        }
-    }
 
     /** Lista en orden de alta (agrupada por genero): el tablero inicial. */
     public List<Personaje> getOrdenDeCarga() { return new ArrayList<>(ordenDeCarga); }

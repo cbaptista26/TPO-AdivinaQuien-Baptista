@@ -34,7 +34,7 @@ public class SimulacionEstrategias {
         Personaje secreto = CatalogoPersonajes.getInstancia().buscarPorNombre("Profesor Hadrian");
         Oraculo oraculo = new OraculoPersonaje(secreto);
 
-        MaquinaGreedy greedy = new MaquinaGreedy("GREEDY", consola);
+        MaquinaGreedy greedy = new MaquinaGreedy("GREEDY", todos, consola);
         BuscadorRecursivo buscador = new BuscadorRecursivo(greedy, consola);
         Personaje encontrado = buscador.resolver(oraculo);
 
@@ -47,13 +47,13 @@ public class SimulacionEstrategias {
         titulo("COMPARACION SOBRE LAS 23 PARTIDAS POSIBLES");
 
         Resultado rGreedy = simular(todos,
-                (n, r) -> new MaquinaGreedy(n, r), "GREEDY");
+                (n, r) -> new MaquinaGreedy(n, todos, r), "GREEDY");
 
         Resultado rSecFact = simular(todos,
-                (n, r) -> new MaquinaSecuencial(n, r, true), "SEC+FACT");
+                (n, r) -> new MaquinaSecuencial(n, todos, r, true), "SEC+FACT");
 
         Resultado rSecPura = simular(todos,
-                (n, r) -> new MaquinaSecuencial(n, r, false), "SEC-PURA");
+                (n, r) -> new MaquinaSecuencial(n, todos, r, false), "SEC-PURA");
 
         System.out.printf("  %-34s %-8s %-8s %-10s %s%n",
                 "ESTRATEGIA", "PEOR", "MEJOR", "PROMEDIO", "ACIERTOS");

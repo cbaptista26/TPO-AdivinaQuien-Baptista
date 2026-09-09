@@ -56,15 +56,16 @@ public class JuegoConsola {
         CatalogoPersonajes.getInstancia().getOrdenDeCarga().forEach(p -> System.out.println("  " + p));
 
         Personaje secretoHumano = elegirPersonajeDelHumano();
-        JugadorHumano humano = new JugadorHumano("VOS", registro);
-        MaquinaGreedy maquina = new MaquinaGreedy("MAQUINA", registro);
+        List<Personaje> universo = CatalogoPersonajes.getInstancia().getOrdenados();
+        JugadorHumano humano = new JugadorHumano("VOS", universo, registro);
+        MaquinaGreedy maquina = new MaquinaGreedy("MAQUINA", universo, registro);
 
         System.out.println("\n  Elegiste a " + secretoHumano.getNombre()
                 + ". La maquina ya eligio el suyo.");
         System.out.println("  Criterio de la maquina: " + maquina.getCriterio());
 
         Partida partida = new Partida(humano, secretoHumano,
-                maquina, new SelectorDePersonaje().elegir(), registro);
+                maquina, selector().elegir(), registro);
 
         while (!partida.haTerminado()) {
             partida.anunciarTurno();
@@ -142,9 +143,10 @@ public class JuegoConsola {
     private void maquinaVsMaquina() {
         titulo("MAQUINA VS MAQUINA");
 
-        SelectorDePersonaje selector = new SelectorDePersonaje();
-        MaquinaGreedy greedy = new MaquinaGreedy("GREEDY", registro);
-        JugadorMaquina secuencial = new MaquinaSecuencial("SECUENCIAL", registro, false);
+        List<Personaje> universo = CatalogoPersonajes.getInstancia().getOrdenados();
+        SelectorDePersonaje selector = selector();
+        MaquinaGreedy greedy = new MaquinaGreedy("GREEDY", universo, registro);
+        JugadorMaquina secuencial = new MaquinaSecuencial("SECUENCIAL", universo, registro, false);
 
         System.out.println("  GREEDY: " + greedy.getCriterio());
         System.out.println("  SECUENCIAL: " + secuencial.getCriterio());
@@ -197,6 +199,11 @@ public class JuegoConsola {
             System.out.printf("    %d. %s%n", i + 1, opciones.get(i));
         }
         return leerEntero(prompt, 1, opciones.size()) - 1;
+    }
+
+    /** El selector sobre el catalogo actual. */
+    private SelectorDePersonaje selector() {
+        return new SelectorDePersonaje(CatalogoPersonajes.getInstancia().getOrdenDeCarga());
     }
 
     private Personaje buscarPorId(int id) {

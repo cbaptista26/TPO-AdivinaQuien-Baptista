@@ -7,13 +7,13 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Los tres algoritmos de ordenamiento que se comparan en la documentacion.
+ * Los tres algoritmos de ordenamiento que comparo en la documentacion.
  *
- * MergeSort es el que usa el catalogo para ordenar el lote inicial de 23
- * personajes. Burbujeo e insercion estan solo para la comparacion de tiempos:
- * no se usan en el juego.
+ * MergeSort es el que usa el catalogo de verdad, para ordenar el lote inicial de
+ * 23 personajes. Burbujeo e insercion los implemente SOLO para la tabla de
+ * tiempos: no se usan en el juego.
  *
- * Ver BenchmarkOrdenamiento para la medicion.
+ * Los numeros medidos estan en BenchmarkOrdenamiento y en la seccion 4.3.
  */
 public class OrdenadorPersonajes {
 
@@ -27,7 +27,7 @@ public class OrdenadorPersonajes {
      * MergeSort: divide la lista en dos mitades, ordena cada una
      * recursivamente y mezcla las dos mitades ya ordenadas.
      *
-     * Esquema de la catedra:
+     * Esquema de la ppt:
      *   CasoBase(x)        -> lista de 0 o 1 elemento, ya esta ordenada
      *   SolucionDirecta(x) -> devolverla tal cual
      *   descomponer(x)     -> partir al medio en dos sublistas

@@ -8,19 +8,25 @@ import com.tpo.adivinaquien.modelo.Filtro;
 import com.tpo.adivinaquien.modelo.Personaje;
 
 /**
- * Coordina los turnos entre dos jugadores. No sabe nada de consola ni de Swing:
- * todo lo que informa lo manda por el RegistroRazonamiento.
+ * El motor: coordina los turnos entre dos jugadores.
  *
- * NO ES UN BUCLE, ES UNA MAQUINA DE ESTADOS: expone getEnTurno(),
- * aplicarJugada() y haTerminado(), y la vista decide cuando pedir la proxima
- * jugada. En consola se llama desde un while; en Swing, desde el listener de un
- * boton. Con un while adentro del motor, Swing se congelaria esperando input.
+ * No sabe nada de consola ni de Swing. Todo lo que informa lo manda por el
+ * RegistroRazonamiento, y lo que devuelve es un ResultadoTurno.
  *
- * Cada jugador tiene su propio Oraculo, que guarda el personaje que ELIGIO y
- * que el rival debe adivinar. Cuando juega A, se consulta el oraculo de B.
+ * ESTO NO ES UN BUCLE, ES UNA MAQUINA DE ESTADOS, y me costo llegar aca. Al
+ * principio tenia un while adentro y en consola andaba, pero al armar la ventana
+ * Swing se congelaba: el hilo que dibuja la interfaz quedaba atrapado en el
+ * bucle esperando que la persona escribiera algo. Entonces lo di vuelta: la
+ * Partida expone "a quien le toca", "aplica esta jugada" y "termino?", y es la
+ * vista la que decide cuando pedir la proxima jugada. En consola desde un while,
+ * en Swing desde el clic de un boton.
  *
- * Regla: una suposicion incorrecta hace perder la partida. Si equivocarse no
- * costara nada, la estrategia optima seria adivinar en el turno 1.
+ * Cada jugador tiene su propio Oraculo, que guarda el personaje que ELIGIO y que
+ * el rival tiene que adivinar. Cuando juega A, se consulta el oraculo de B.
+ *
+ * Regla: si arriesgas y erras, perdes. Es la regla clasica y ademas le da sentido
+ * a la decision de arriesgar; si equivocarse no costara nada, lo mejor seria
+ * adivinar en el turno 1.
  */
 public class Partida {
 

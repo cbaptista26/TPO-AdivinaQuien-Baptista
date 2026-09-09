@@ -1,5 +1,6 @@
 package com.tpo.adivinaquien.vista;
 
+import com.tpo.adivinaquien.catalogo.CatalogoPersonajes;
 import com.tpo.adivinaquien.juego.Partida;
 import com.tpo.adivinaquien.juego.RegistroRazonamiento;
 import com.tpo.adivinaquien.juego.ResultadoTurno;
@@ -10,17 +11,19 @@ import com.tpo.adivinaquien.modelo.Filtro;
 import com.tpo.adivinaquien.modelo.Personaje;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Puente entre la ventana y el motor. La ventana solo dibuja y escucha clics;
- * la coordinacion de la partida vive aca.
+ * El puente entre la ventana y el motor.
  *
- * Hace falta porque en Swing no hay bucle de turnos: cada clic dispara un turno
- * y la ventana vuelve a esperar. Este controlador se encarga de que, apenas
- * termina el turno del humano, la maquina juegue el suyo.
+ * La ventana solo dibuja y escucha clics; toda la coordinacion de la partida
+ * esta aca. Hace falta porque en Swing no hay bucle de turnos: cada clic dispara
+ * un turno y despues la ventana vuelve a quedar esperando. Este controlador se
+ * encarga de que apenas termina el turno de la persona, la maquina juegue el
+ * suyo.
  *
- * No contiene ninguna decision de juego: solo llama en orden a MaquinaGreedy,
- * Jugador y Partida.
+ * No tiene ninguna decision de juego adentro: solo llama en orden a las clases
+ * que ya existen.
  */
 public class ControladorPartida {
 
@@ -51,13 +54,14 @@ public class ControladorPartida {
     /** Modo jugador contra maquina. */
     public void nuevaPartida(Personaje secretoDelHumano) {
         modo = Modo.JUGADOR_VS_MAQUINA;
-        jugadorA = new JugadorHumano("VOS", registro);
-        jugadorB = new MaquinaGreedy("MAQUINA", registro);
+        List<Personaje> universo = CatalogoPersonajes.getInstancia().getOrdenados();
+        jugadorA = new JugadorHumano("VOS", universo, registro);
+        jugadorB = new MaquinaGreedy("MAQUINA", universo, registro);
 
         registro.registrar("Nueva partida. Elegiste a " + secretoDelHumano.getNombre() + ".");
         registro.registrar("Criterio de la maquina: " + jugadorB.getCriterio());
 
-        iniciar(secretoDelHumano, new SelectorDePersonaje().elegir());
+        iniciar(secretoDelHumano, selector().elegir());
     }
 
     /**
@@ -67,14 +71,20 @@ public class ControladorPartida {
      */
     public void nuevaPartidaEntreMaquinas() {
         modo = Modo.MAQUINA_VS_MAQUINA;
-        jugadorA = new MaquinaGreedy("GREEDY", registro);
-        jugadorB = new MaquinaSecuencial("SECUENCIAL", registro, false);
+        List<Personaje> universo = CatalogoPersonajes.getInstancia().getOrdenados();
+        jugadorA = new MaquinaGreedy("GREEDY", universo, registro);
+        jugadorB = new MaquinaSecuencial("SECUENCIAL", universo, registro, false);
 
         registro.registrar("GREEDY: " + jugadorA.getCriterio());
         registro.registrar("SECUENCIAL: " + jugadorB.getCriterio());
 
-        SelectorDePersonaje selector = new SelectorDePersonaje();
+        SelectorDePersonaje selector = selector();
         iniciar(selector.elegir(), selector.elegir());
+    }
+
+    /** El selector sobre el catalogo actual. */
+    private SelectorDePersonaje selector() {
+        return new SelectorDePersonaje(CatalogoPersonajes.getInstancia().getOrdenDeCarga());
     }
 
     private void iniciar(Personaje secretoA, Personaje secretoB) {
@@ -97,10 +107,11 @@ public class ControladorPartida {
 
         if (partida.haTerminado()) { terminar(); return; }
 
-        // Turno automatico de la maquina rival.
+        // Turno automatico de la maquina rival. No hace falta castear: todos los
+        // jugadores responden decidirJugada() y la maquina siempre trae una.
         partida.anunciarTurno();
-        observador.mostrarMensaje(
-                partida.aplicarJugada(((JugadorMaquina) jugadorB).jugarTurno()).mensaje());
+        jugadorB.decidirJugada().ifPresent(
+                j -> observador.mostrarMensaje(partida.aplicarJugada(j).mensaje()));
 
         if (partida.haTerminado()) {
             terminar();
@@ -118,9 +129,10 @@ public class ControladorPartida {
     public boolean avanzarTurnoDeMaquinas() {
         if (partida == null || partida.haTerminado()) return false;
 
-        JugadorMaquina actor = (JugadorMaquina) partida.getEnTurno();
-        ResultadoTurno r = partida.aplicarJugada(actor.jugarTurno());
-        observador.mostrarMensaje(r.mensaje());
+        Optional<Jugada> jugada = partida.getEnTurno().decidirJugada();
+        if (jugada.isEmpty()) return false;      // no deberia pasar: ambas son maquinas
+
+        observador.mostrarMensaje(partida.aplicarJugada(jugada.get()).mensaje());
 
         if (partida.haTerminado()) { terminar(); return false; }
 
@@ -183,14 +195,17 @@ public class ControladorPartida {
         return (partida == null || partida.haTerminado()) ? "" : partida.getEnTurno().getNombre();
     }
 
-    /** Los filtros que la persona todavia no pregunto. */
+    /**
+     * Los filtros que el jugador del tablero todavia no pregunto.
+     * Ya no hace falta preguntar de que tipo es: lo responde cualquier Jugador.
+     */
     public List<Filtro> filtrosDisponibles() {
-        return (jugadorA instanceof JugadorHumano h) ? h.filtrosDisponibles() : List.of();
+        return jugadorA == null ? List.of() : jugadorA.filtrosDisponibles();
     }
 
-    /** Evaluacion greedy sobre el tablero de la persona, de mejor a peor. */
+    /** Evaluacion greedy sobre el tablero mostrado, de mejor a peor. */
     public List<EvaluacionFiltro> sugerencias() {
-        return (jugadorA instanceof JugadorHumano h) ? h.sugerencias() : List.of();
+        return jugadorA == null ? List.of() : jugadorA.sugerencias();
     }
 
     public int numeroTurno() { return partida == null ? 0 : partida.getNumeroTurno(); }

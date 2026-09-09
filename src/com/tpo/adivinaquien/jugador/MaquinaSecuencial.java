@@ -2,22 +2,27 @@ package com.tpo.adivinaquien.jugador;
 
 import com.tpo.adivinaquien.juego.RegistroRazonamiento;
 import com.tpo.adivinaquien.modelo.Filtro;
+import com.tpo.adivinaquien.modelo.Personaje;
 
 import java.util.List;
 
 /**
- * BUSQUEDA SECUENCIAL: la maquina de contraste. Pregunta los filtros en un
- * orden fijo, sin evaluar cuanto corta cada uno. Es la version ingenua de la
- * eleccion de pregunta, equivalente a recorrer un arreglo de punta a punta en
- * vez de partirlo por la mitad.
+ * Esta maquina la hice a proposito para tener con que comparar.
  *
- * Juega peor que la greedy a proposito, pero tiene un criterio explicable y
- * NO usa Random. Existiendo las dos, el modo Maquina vs Maquina no cuenta que
- * greedy es mejor: lo demuestra con numeros.
+ * Pregunta los filtros en un orden fijo, sin fijarse cuanto corta cada uno. Es
+ * la version ingenua: seria como recorrer una lista de punta a punta en vez de
+ * partirla al medio.
  *
- * El orden fijo arranca por los filtros de color (los menos parejos: cortan
- * 8/15 y 7/16) para que la diferencia sea observable. Ver seccion 4 de la
- * documentacion.
+ * Juega peor que la greedy, pero OJO: no usa Random. El criterio se explica en
+ * una frase, "recorro los filtros en el orden en que los declare y pregunto el
+ * primero que sirva". Eso era importante porque el profesor pidio que hasta la
+ * maquina que juega mal tenga un criterio explicable.
+ *
+ * Teniendo las dos, el modo maquina vs maquina no cuenta que greedy es mejor:
+ * lo muestra con numeros.
+ *
+ * El orden fijo arranca por los colores, que son los filtros mas desparejos
+ * (cortan 8/15 y 7/16), asi la diferencia se nota. Ver seccion 5.3.
  */
 public class MaquinaSecuencial extends JugadorMaquina {
 
@@ -28,8 +33,9 @@ public class MaquinaSecuencial extends JugadorMaquina {
     private final boolean conFactibilidad;
 
     /** Version pura: orden fijo y ningun elemento del esquema greedy. */
-    public MaquinaSecuencial(String nombre, RegistroRazonamiento registro) {
-        this(nombre, registro, false);
+    public MaquinaSecuencial(String nombre, List<Personaje> candidatosIniciales,
+                             RegistroRazonamiento registro) {
+        this(nombre, candidatosIniciales, registro, false);
     }
 
     /**
@@ -38,8 +44,9 @@ public class MaquinaSecuencial extends JugadorMaquina {
      *                        seleccion, asi que permite medir cuanto aporta
      *                        cada elemento del greedy por separado.
      */
-    public MaquinaSecuencial(String nombre, RegistroRazonamiento registro, boolean conFactibilidad) {
-        super(nombre, registro);
+    public MaquinaSecuencial(String nombre, List<Personaje> candidatosIniciales,
+                             RegistroRazonamiento registro, boolean conFactibilidad) {
+        super(nombre, candidatosIniciales, registro);
         this.conFactibilidad = conFactibilidad;
     }
 

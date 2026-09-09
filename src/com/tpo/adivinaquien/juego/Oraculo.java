@@ -6,11 +6,14 @@ import com.tpo.adivinaquien.modelo.Personaje;
 /**
  * Lo unico que un jugador puede hacer contra el personaje secreto del rival.
  *
- * Resuelve un requisito explicito del enunciado: "la maquina no sabe, no puede
+ * Esto resuelve un pedido explicito del enunciado: "la maquina no sabe, no puede
  * acceder directamente a la variable del personaje elegido por el jugador
- * humano". La maquina recibe esta interfaz, no el Personaje. No hay ningun
- * getter del secreto, asi que ni siquiera por error se puede espiar: no
- * compilaria.
+ * humano".
+ *
+ * La forma que encontre fue no darle nunca el Personaje a la maquina, sino esta
+ * interfaz con dos operaciones: preguntar por un filtro y arriesgar un nombre.
+ * El personaje secreto queda en un campo privado sin getter, asi que no es que
+ * la maquina "no lo hace": no compilaria si lo intentara.
  */
 public interface Oraculo {
 

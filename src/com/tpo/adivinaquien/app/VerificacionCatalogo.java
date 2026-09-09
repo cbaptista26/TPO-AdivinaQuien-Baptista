@@ -13,7 +13,7 @@ import java.util.Set;
  * Programa de verificacion del modelo y del catalogo.
  *
  * No es parte del juego: sirve para comprobar que las decisiones de disenio
- * se cumplen de verdad y para tener numeros concretos que citar en la defensa.
+ * se cumplen de verdad y para tener numeros concretos.
  */
 public class VerificacionCatalogo {
 

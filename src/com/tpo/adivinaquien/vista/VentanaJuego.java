@@ -35,25 +35,7 @@ import java.util.Map;
 public final class VentanaJuego implements ControladorPartida.Observador {
 
     // -----------------------------------------------------------------
-    // PALETA: ACADEMIA UMBRALUZ (violeta oscuro + dorado)
-    // -----------------------------------------------------------------
-    private static final Color FONDO          = new Color(0x15, 0x0F, 0x24);
-    private static final Color PANEL          = new Color(0x24, 0x1A, 0x3D);
-    private static final Color PANEL_CLARO    = new Color(0x2E, 0x21, 0x4D);
-    private static final Color VIOLETA        = new Color(0x4B, 0x2E, 0x83);
-    private static final Color VIOLETA_CLARO  = new Color(0x7C, 0x4D, 0xFF);
-    private static final Color DORADO         = new Color(0xD4, 0xAF, 0x37);
-    private static final Color DORADO_TENUE   = new Color(0x8A, 0x77, 0x3F);
-    private static final Color TEXTO          = new Color(0xF2, 0xEA, 0xD9);
-    private static final Color TEXTO_TENUE    = new Color(0xB8, 0xA9, 0xD9);
-    private static final Color VIVO_FONDO     = new Color(0x32, 0x24, 0x52);
-    private static final Color DESCARTADO_FONDO = new Color(0x1C, 0x17, 0x28);
-    private static final Color DESCARTADO_TEXTO  = new Color(0x6B, 0x62, 0x7A);
-    private static final Font FUENTE_TITULO = new Font(Font.SERIF, Font.BOLD, 15);
-    private static final Font FUENTE_BASE   = new Font(Font.SANS_SERIF, Font.PLAIN, 13);
-
-    // -----------------------------------------------------------------
-    // CAMPOS DEL FORMULARIO (los genera el GUI Designer)
+    // CAMPOS DEL FORMULARIO (los genera el GUI Designer, no los toques)
     // -----------------------------------------------------------------
     private JPanel panelPrincipal;
     private JLabel lblTurno;
@@ -72,14 +54,15 @@ public final class VentanaJuego implements ControladorPartida.Observador {
     private RegistroSwing registro;
     private ControladorPartida controlador;
 
+    /** Dibuja las tarjetas dentro de panelTablero. */
+    private TableroPersonajes tablero;
+
     /** Selector con los cuatro modos, equivalente al menu de la consola. */
     private JComboBox<String> comboModo;
 
     /** Reproduce el modo maquina vs maquina turno a turno. */
     private Timer temporizador;
 
-    /** Una tarjeta por personaje, para poder tacharla cuando se descarta. */
-    private final Map<Integer, JLabel> tarjetas = new HashMap<>();
 
     // -----------------------------------------------------------------
     // ARRANQUE
@@ -88,12 +71,16 @@ public final class VentanaJuego implements ControladorPartida.Observador {
     /**
      * Crea los componentes que declara el formulario.
      *
-     * El diseno visual se hizo con el Swing UI Designer y quedo guardado en
-     * VentanaJuego.form. La instanciacion se hace aca por codigo y no con el
-     * metodo que genera el disenador, porque ese metodo depende de forms_rt.jar
-     * (una libreria interna de IntelliJ) y el proyecto no compilaria fuera del
-     * IDE. No se pierde nada: el layout definitivo lo arma reorganizarLayout(),
-     * cuya primera instruccion es panelPrincipal.removeAll().
+     * El formulario lo disenie con el Swing UI Designer y quedo en
+     * VentanaJuego.form, pero los componentes los instancio aca a mano.
+     *
+     * Por que: el codigo que genera el disenador usa GridLayoutManager y
+     * GridConstraints, que son clases de forms_rt.jar, una libreria interna de
+     * IntelliJ. Con eso el proyecto no compilaba fuera del IDE. Cuando lo estaba
+     * peleando me di cuenta de algo: reorganizarLayout() empieza con
+     * panelPrincipal.removeAll(), o sea que la distribucion que armaba el
+     * disenador la tiraba tres lineas despues igual. Estaba peleando por una
+     * libreria que construia algo que despues descartaba.
      */
     private void crearComponentes() {
         panelPrincipal  = new JPanel();
@@ -123,6 +110,7 @@ public final class VentanaJuego implements ControladorPartida.Observador {
         txtRazonamiento.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 
         aplicarTema();
+        tablero = new TableroPersonajes(panelTablero);
         reorganizarLayout();
         construirTablero();
 
@@ -139,60 +127,61 @@ public final class VentanaJuego implements ControladorPartida.Observador {
      * eso vive separado de crearComponentes() y de reorganizarLayout().
      */
     private void aplicarTema() {
-        panelPrincipal.setBackground(FONDO);
-        panelTablero.setBackground(FONDO);
-        panelFiltros.setBackground(FONDO);
+        panelPrincipal.setBackground(PaletaArcana.FONDO);
+        panelTablero.setBackground(PaletaArcana.FONDO);
+        panelFiltros.setBackground(PaletaArcana.FONDO);
 
-        lblTurno.setForeground(DORADO);
-        lblTurno.setFont(FUENTE_TITULO);
-        lblCandidatos.setForeground(TEXTO_TENUE);
-        lblCandidatos.setFont(FUENTE_BASE);
+        lblTurno.setForeground(PaletaArcana.DORADO);
+        lblTurno.setFont(PaletaArcana.FUENTE_TITULO);
+        lblCandidatos.setForeground(PaletaArcana.TEXTO_TENUE);
+        lblCandidatos.setFont(PaletaArcana.FUENTE_BASE);
 
         for (JButton b : new JButton[]{btnNuevaPartida, btnArriesgar, btnSugerencia}) {
-            b.setBackground(VIOLETA);
-            b.setForeground(TEXTO);
-            b.setFont(FUENTE_BASE);
+            b.setBackground(PaletaArcana.VIOLETA);
+            b.setForeground(PaletaArcana.TEXTO);
+            b.setFont(PaletaArcana.FUENTE_BASE);
             b.setFocusPainted(false);
             b.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(DORADO_TENUE, 1),
+                    BorderFactory.createLineBorder(PaletaArcana.DORADO_TENUE, 1),
                     BorderFactory.createEmptyBorder(6, 12, 6, 12)));
         }
 
-        comboModo.setBackground(PANEL_CLARO);
-        comboModo.setForeground(TEXTO);
-        comboModo.setFont(FUENTE_BASE);
+        comboModo.setBackground(PaletaArcana.PANEL_CLARO);
+        comboModo.setForeground(PaletaArcana.TEXTO);
+        comboModo.setFont(PaletaArcana.FUENTE_BASE);
         comboModo.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
                     int index, boolean isSelected, boolean cellHasFocus) {
                 Component c = super.getListCellRendererComponent(
                         list, value, index, isSelected, cellHasFocus);
-                c.setBackground(isSelected ? VIOLETA_CLARO : PANEL_CLARO);
-                c.setForeground(TEXTO);
+                c.setBackground(isSelected ? PaletaArcana.VIOLETA_CLARO : PaletaArcana.PANEL_CLARO);
+                c.setForeground(PaletaArcana.TEXTO);
                 return c;
             }
         });
 
-        txtRazonamiento.setBackground(FONDO);
-        txtRazonamiento.setForeground(TEXTO);
-        txtRazonamiento.setCaretColor(DORADO);
+        txtRazonamiento.setBackground(PaletaArcana.FONDO);
+        txtRazonamiento.setForeground(PaletaArcana.TEXTO);
+        txtRazonamiento.setCaretColor(PaletaArcana.DORADO);
     }
 
     /** Un borde titulado dorado sobre fondo violeta, para las tres secciones del tablero. */
     private static Border bordeTematico(String titulo) {
-        Border linea = BorderFactory.createLineBorder(DORADO_TENUE, 1);
+        Border linea = BorderFactory.createLineBorder(PaletaArcana.DORADO_TENUE, 1);
         return BorderFactory.createTitledBorder(linea, titulo,
                 TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION,
-                FUENTE_TITULO.deriveFont(12f), DORADO);
+                PaletaArcana.FUENTE_TITULO.deriveFont(12f), PaletaArcana.DORADO);
     }
 
     /**
      * Arma el layout definitivo con BorderLayout y JScrollPane.
      *
-     * El .form define QUE componentes existen. Su GridLayoutManager reparte el
-     * espacio en celdas fijas y con 23 tarjetas mas un panel de texto que crece
-     * dejaba los botones fuera de pantalla; BorderLayout reparte de forma
-     * proporcional y el scroll evita los cortes.
+     * El .form define QUE componentes existen, pero el GridLayoutManager del
+     * disenador reparte el espacio en celdas fijas y con 23 tarjetas mas el
+     * panel de razonamiento que crece, los botones de pregunta me quedaban fuera
+     * de la pantalla y no se podia jugar. BorderLayout reparte proporcional y el
+     * scroll evita que se corte nada.
      */
     private void reorganizarLayout() {
         panelPrincipal.removeAll();
@@ -201,32 +190,32 @@ public final class VentanaJuego implements ControladorPartida.Observador {
 
         // --- barra superior: estado a la izquierda, boton a la derecha ---
         JPanel etiquetas = new JPanel(new GridLayout(2, 1));
-        etiquetas.setBackground(FONDO);
+        etiquetas.setBackground(PaletaArcana.FONDO);
         etiquetas.add(lblTurno);
         etiquetas.add(lblCandidatos);
 
         JPanel controles = new JPanel(new BorderLayout(6, 6));
-        controles.setBackground(FONDO);
+        controles.setBackground(PaletaArcana.FONDO);
         controles.add(comboModo, BorderLayout.CENTER);
         controles.add(btnNuevaPartida, BorderLayout.EAST);
 
         JPanel superior = new JPanel(new BorderLayout(8, 8));
-        superior.setBackground(FONDO);
+        superior.setBackground(PaletaArcana.FONDO);
         superior.add(etiquetas, BorderLayout.CENTER);
         superior.add(controles, BorderLayout.EAST);
 
         // --- columna derecha: preguntas arriba, acciones abajo ---
         JPanel acciones = new JPanel(new GridLayout(2, 1, 4, 4));
-        acciones.setBackground(FONDO);
+        acciones.setBackground(PaletaArcana.FONDO);
         acciones.add(btnArriesgar);
         acciones.add(btnSugerencia);
 
         JScrollPane scrollFiltros = new JScrollPane(panelFiltros);
         scrollFiltros.setBorder(bordeTematico("Preguntas"));
-        scrollFiltros.getViewport().setBackground(FONDO);
+        scrollFiltros.getViewport().setBackground(PaletaArcana.FONDO);
 
         JPanel derecha = new JPanel(new BorderLayout(4, 8));
-        derecha.setBackground(FONDO);
+        derecha.setBackground(PaletaArcana.FONDO);
         derecha.add(scrollFiltros, BorderLayout.CENTER);
         derecha.add(acciones, BorderLayout.SOUTH);
         derecha.setPreferredSize(new Dimension(270, 0));
@@ -234,7 +223,7 @@ public final class VentanaJuego implements ControladorPartida.Observador {
         // --- centro: tablero arriba, razonamiento abajo, con divisor movible ---
         JScrollPane scrollTablero = new JScrollPane(panelTablero);
         scrollTablero.setBorder(bordeTematico("Tablero"));
-        scrollTablero.getViewport().setBackground(FONDO);
+        scrollTablero.getViewport().setBackground(PaletaArcana.FONDO);
 
         JScrollPane scrollRazonamiento = new JScrollPane(txtRazonamiento);
         scrollRazonamiento.setBorder(bordeTematico("Razonamiento de la maquina"));
@@ -243,7 +232,7 @@ public final class VentanaJuego implements ControladorPartida.Observador {
                 scrollTablero, scrollRazonamiento);
         centro.setResizeWeight(0.55);   // 55% tablero, 45% razonamiento
         centro.setContinuousLayout(true);
-        centro.setBackground(FONDO);
+        centro.setBackground(PaletaArcana.FONDO);
         centro.setBorder(null);
 
         panelPrincipal.add(superior, BorderLayout.NORTH);
@@ -255,28 +244,28 @@ public final class VentanaJuego implements ControladorPartida.Observador {
         SwingUtilities.invokeLater(() -> {
             // Tematiza tambien los dialogos (JOptionPane), que Swing arma con
             // su propio Look & Feel y no heredan los colores de panelPrincipal.
-            UIManager.put("OptionPane.background", PANEL);
-            UIManager.put("Panel.background", PANEL);
-            UIManager.put("OptionPane.messageForeground", TEXTO);
-            UIManager.put("Button.background", VIOLETA);
-            UIManager.put("Button.foreground", TEXTO);
-            UIManager.put("List.background", PANEL_CLARO);
-            UIManager.put("List.foreground", TEXTO);
-            UIManager.put("List.selectionBackground", VIOLETA_CLARO);
-            UIManager.put("ComboBox.background", PANEL_CLARO);
-            UIManager.put("ComboBox.foreground", TEXTO);
-            UIManager.put("ComboBox.selectionBackground", VIOLETA_CLARO);
-            UIManager.put("ComboBox.selectionForeground", TEXTO);
-            UIManager.put("ComboBox.buttonBackground", PANEL_CLARO);
-            UIManager.put("ComboBox.buttonShadow", DORADO_TENUE);
-            UIManager.put("ComboBox.buttonDarkShadow", VIOLETA);
-            UIManager.put("ComboBox.buttonHighlight", DORADO);
-            UIManager.put("TextField.background", PANEL_CLARO);
-            UIManager.put("TextField.foreground", TEXTO);
+            UIManager.put("OptionPane.background", PaletaArcana.PANEL);
+            UIManager.put("Panel.background", PaletaArcana.PANEL);
+            UIManager.put("OptionPane.messageForeground", PaletaArcana.TEXTO);
+            UIManager.put("Button.background", PaletaArcana.VIOLETA);
+            UIManager.put("Button.foreground", PaletaArcana.TEXTO);
+            UIManager.put("List.background", PaletaArcana.PANEL_CLARO);
+            UIManager.put("List.foreground", PaletaArcana.TEXTO);
+            UIManager.put("List.selectionBackground", PaletaArcana.VIOLETA_CLARO);
+            UIManager.put("ComboBox.background", PaletaArcana.PANEL_CLARO);
+            UIManager.put("ComboBox.foreground", PaletaArcana.TEXTO);
+            UIManager.put("ComboBox.selectionBackground", PaletaArcana.VIOLETA_CLARO);
+            UIManager.put("ComboBox.selectionForeground", PaletaArcana.TEXTO);
+            UIManager.put("ComboBox.buttonBackground", PaletaArcana.PANEL_CLARO);
+            UIManager.put("ComboBox.buttonShadow", PaletaArcana.DORADO_TENUE);
+            UIManager.put("ComboBox.buttonDarkShadow", PaletaArcana.VIOLETA);
+            UIManager.put("ComboBox.buttonHighlight", PaletaArcana.DORADO);
+            UIManager.put("TextField.background", PaletaArcana.PANEL_CLARO);
+            UIManager.put("TextField.foreground", PaletaArcana.TEXTO);
 
             JFrame frame = new JFrame("Adivina Quien - Academia Umbraluz");
             frame.setContentPane(new VentanaJuego().panelPrincipal);
-            frame.getContentPane().setBackground(FONDO);
+            frame.getContentPane().setBackground(PaletaArcana.FONDO);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1000, 700);
             frame.setLocationRelativeTo(null);
@@ -288,38 +277,9 @@ public final class VentanaJuego implements ControladorPartida.Observador {
     // CONSTRUCCION DEL TABLERO
     // -----------------------------------------------------------------
 
-    /** Crea una tarjeta por cada uno de los 23 personajes. */
+    /** Carga las tarjetas del tablero con el universo de personajes. */
     private void construirTablero() {
-        List<Personaje> todos = CatalogoPersonajes.getInstancia().getOrdenDeCarga();
-
-        panelTablero.setLayout(new GridLayout(0, 4, 6, 6));
-        panelTablero.removeAll();
-        tarjetas.clear();
-
-        for (Personaje p : todos) {
-            JLabel tarjeta = new JLabel(textoDeTarjeta(p), SwingConstants.CENTER);
-            tarjeta.setOpaque(true);
-            tarjeta.setBorder(BorderFactory.createLineBorder(DORADO_TENUE));
-            tarjeta.setPreferredSize(new Dimension(150, 58));
-            tarjeta.setFont(FUENTE_BASE);
-
-            tarjetas.put(p.getId(), tarjeta);
-            panelTablero.add(tarjeta);
-        }
-        panelTablero.revalidate();
-        panelTablero.repaint();
-    }
-
-    /** El contenido de una tarjeta, en HTML para poder poner dos renglones. */
-    private String textoDeTarjeta(Personaje p) {
-        String colorTexto = String.format("#%06X", TEXTO.getRGB() & 0xFFFFFF);
-        return "<html><center><b>" + p.getNombre() + "</b><br>"
-                + "<font size=2 color='" + colorTexto + "'>"
-                + p.getGenero().getEtiqueta()
-                + (p.isCalvo() ? " · calvo" : " · con pelo")
-                + (p.isUsaLentes() ? " · lentes" : "")
-                + "<br>pelo " + p.getColorPelo().getEtiqueta().toLowerCase()
-                + "</font></center></html>";
+        tablero.construir(CatalogoPersonajes.getInstancia().getOrdenDeCarga());
     }
 
     /** Rehace los botones de pregunta con los filtros que siguen disponibles. */
@@ -330,12 +290,12 @@ public final class VentanaJuego implements ControladorPartida.Observador {
         for (Filtro f : controlador.filtrosDisponibles()) {
             JButton boton = new JButton(f.getDescripcion());
             boton.setEnabled(controlador.esTurnoDelHumano());
-            boton.setBackground(VIOLETA);
-            boton.setForeground(TEXTO);
-            boton.setFont(FUENTE_BASE);
+            boton.setBackground(PaletaArcana.VIOLETA);
+            boton.setForeground(PaletaArcana.TEXTO);
+            boton.setFont(PaletaArcana.FUENTE_BASE);
             boton.setFocusPainted(false);
             boton.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(DORADO_TENUE, 1),
+                    BorderFactory.createLineBorder(PaletaArcana.DORADO_TENUE, 1),
                     BorderFactory.createEmptyBorder(4, 8, 4, 8)));
             boton.addActionListener(e -> controlador.preguntar(f));
             panelFiltros.add(boton);
@@ -362,12 +322,14 @@ public final class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Modo maquina vs maquina: las dos juegan solas y un Timer va mostrando un
-     * turno por segundo para poder seguir el razonamiento en pantalla.
+     * Modo maquina vs maquina: juegan solas y un Timer muestra un turno por
+     * segundo, asi da tiempo a leer el razonamiento.
      *
-     * Se usa javax.swing.Timer y no Thread.sleep porque el Timer dispara sus
-     * eventos en el mismo hilo de Swing: asi la ventana se sigue redibujando
-     * entre turno y turno en vez de quedar congelada.
+     * Use javax.swing.Timer y no Thread.sleep. Probe con sleep primero y la
+     * ventana se congelaba, porque el hilo de Swing es el mismo que redibuja la
+     * pantalla: si lo dormis, deja de dibujar. El Timer dispara sus eventos en
+     * ese hilo pero sin bloquearlo. Es el mismo motivo por el que Partida no
+     * tiene un bucle adentro.
      */
     private void arrancarMaquinaVsMaquina() {
         registro.limpiar();
@@ -385,9 +347,13 @@ public final class VentanaJuego implements ControladorPartida.Observador {
     }
 
     /**
-     * Corre una de las clases de analisis y vuelca lo que imprime en el panel
-     * de razonamiento, redirigiendo System.out temporalmente. Asi la ventana
-     * muestra exactamente la misma salida que la consola, sin duplicar codigo.
+     * Corre una de las clases de analisis y muestra lo que imprime en el panel
+     * de razonamiento.
+     *
+     * El truco es redirigir System.out a un buffer, correr la clase y despues
+     * volcar el buffer. Lo hice asi para no duplicar codigo: la ventana muestra
+     * exactamente la misma salida que la consola. El finally garantiza que
+     * System.out se restaure aunque algo falle.
      */
     private void mostrarSalida(Runnable analisis) {
         registro.limpiar();
@@ -524,24 +490,10 @@ public final class VentanaJuego implements ControladorPartida.Observador {
      * ramas que se descartaron enteras.
      */
     private void pintarTablero() {
-        if (!controlador.hayPartida()) {
-            for (JLabel t : tarjetas.values()) {
-                t.setEnabled(true);
-                t.setBackground(PANEL);
-                t.setForeground(TEXTO);
-            }
-            return;
-        }
-
-        List<Personaje> vivos = controlador.candidatosDelTablero();
-
-        for (Map.Entry<Integer, JLabel> entrada : tarjetas.entrySet()) {
-            boolean sigueVivo = vivos.stream().anyMatch(p -> p.getId() == entrada.getKey());
-            JLabel t = entrada.getValue();
-
-            t.setEnabled(sigueVivo);
-            t.setBackground(sigueVivo ? VIVO_FONDO : DESCARTADO_FONDO);
-            t.setForeground(sigueVivo ? TEXTO : DESCARTADO_TEXTO);
+        if (controlador.hayPartida()) {
+            tablero.pintar(controlador.candidatosDelTablero());
+        } else {
+            tablero.reiniciar();
         }
     }
 

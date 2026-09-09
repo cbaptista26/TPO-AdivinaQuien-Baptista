@@ -9,8 +9,12 @@ import com.tpo.adivinaquien.modelo.Personaje;
 import java.util.List;
 
 /**
- * El mismo algoritmo que Jugador, pero con la recursion escrita de forma
- * literal, para mostrar la correspondencia exacta con el esquema de la catedra:
+ * El mismo algoritmo que Jugador, pero con la recursion escrita de verdad.
+ *
+ * Lo escribi porque me preocupaba que el Divide and Conquer no se viera: en el
+ * juego la reduccion pasa a lo largo de los turnos y no hay ningun metodo que se
+ * llame a si mismo. Aca resolver() SI se llama a si mismo, y se puede seguir
+ * linea por linea contra el esquema de la catedra:
  *
  *   Algoritmo D&C(x)              resolver(candidatos, ...)
  *     if CasoBase(x)                if (candidatos.size() == 1)
@@ -20,12 +24,14 @@ import java.util.List;
  *       y = D&C(xi)                 resolver(subconjunto, ...)   <- recursion
  *       return combinar(y)          particion.combinar(respuesta)
  *
- * Jugador resuelve turno a turno porque Swing es orientado a eventos y no se
- * puede dejar una llamada recursiva esperando un clic. Son el mismo algoritmo.
+ * Las dos versiones conviven porque Swing funciona por eventos: no puedo dejar
+ * una llamada recursiva colgada esperando que alguien haga clic. Entonces la
+ * version por turnos la usa la ventana y esta se usa en maquina vs maquina,
+ * donde el rival contesta al instante.
  *
- * Recurrencia: T(n) = T(n/2) + Theta(n). Caso de division con a=1, b=2, k=1;
- * como a < b^k queda Theta(n) de computo, y Theta(log n) preguntas, que es la
- * profundidad de la recursion.
+ * Recurrencia: T(n) = T(n/2) + Theta(n). Caso de division con a=1, b=2, k=1.
+ * Como a < b^k queda Theta(n) de computo, y la cantidad de preguntas es la
+ * profundidad de la recursion: Theta(log n).
  */
 public class BuscadorRecursivo {
 

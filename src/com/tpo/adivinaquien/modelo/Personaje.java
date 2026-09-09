@@ -40,14 +40,13 @@ public class Personaje {
     public ColorPelo getColorPelo() { return colorPelo; }
 
     /**
-     * Criterio de orden de la lista interna de la maquina.
+     * Con que criterio ordeno la lista: genero, despues color de pelo, despues
+     * calvicie y por ultimo anteojos.
      *
-     * Ordena por genero, despues por color de pelo, despues por calvicie y por
-     * ultimo por lentes. Es un orden total: como no hay dos personajes con la
-     * misma combinacion de atributos, nunca devuelve 0 para dos personajes
-     * distintos, asi que la posicion de cada uno en la lista es unica.
-     *
-     * Se usa en la insercion binaria de CatalogoPersonajes.
+     * Lo importante es que es un ORDEN TOTAL. Como no hay dos personajes con la
+     * misma combinacion de atributos, este comparador nunca devuelve 0 para dos
+     * personajes distintos, asi que cada uno tiene una posicion unica. Eso es lo
+     * que me deja usar busqueda binaria sin ambiguedad.
      */
     public static final Comparator<Personaje> POR_ATRIBUTOS =
             Comparator.comparing(Personaje::getGenero)
