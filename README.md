@@ -1,39 +1,136 @@
-# Adivina Quién - Lógica Algorítmica
+# 🧙 Adivina Quién — Lógica Algorítmica
 
-Este proyecto es una implementación en Java del clásico juego "Adivina Quién", desarrollado como Trabajo Práctico Obligatorio (TPO) para la asignatura Diseño y Análisis de Algoritmos. El enfoque principal del proyecto no es únicamente la jugabilidad, sino la aplicación, demostración y justificación formal de patrones de **Lógica Algorítmica**.
+Implementación en **Java** del clásico juego *Adivina Quién*, ambientado en una **academia de magia**. El proyecto fue desarrollado como **Trabajo Práctico Obligatorio para la asignatura Diseño y Análisis de Algoritmos**.
+
+El objetivo principal es aplicar y demostrar conceptos de **Lógica Algorítmica**, utilizando estrategias de **Divide y Conquista** y **Greedy**, junto con diferentes estructuras de datos y análisis de complejidad.
+
+---
 
 ## 🧠 Patrones Algorítmicos Aplicados
 
-El motor del juego está diseñado para separar la toma de decisiones del procesamiento de datos, garantizando la trazabilidad algorítmica exigida por la cátedra:
+### Divide y Conquista
 
-- **Greedy (Algoritmo Voraz):** 
-  - Utilizado por la máquina para seleccionar la mejor pregunta en cada turno. Aplica una función de selección *minimax* (minimiza el tamaño del peor caso posible) y una función de factibilidad que descarta filtros lógicamente redundantes, optimizando la reducción del espacio de búsqueda.
-- **Divide & Conquer (Divide y Conquista):** 
-  - **Filtrado:** Utilizado para reducir el conjunto de candidatos tras recibir una respuesta, descartando las ramas inválidas en tiempo $\Theta(\log n)$ en un árbol de decisión ideal.
-  - **Ordenamiento:** Implementado en la carga inicial del catálogo mediante **MergeSort** $\Theta(n \log n)$, y en la inserción de nuevos personajes mediante **Búsqueda Binaria** $\Theta(\log n)$.
+* **MergeSort:** utilizado para ordenar inicialmente el catálogo de 23 personajes por sus atributos, con complejidad **Θ(n log n)**.
+* **Búsqueda Binaria:** utilizada para encontrar la posición de nuevos personajes dentro del catálogo ordenado, con complejidad **Θ(log n)**.
+* **Reducción de candidatos:** en cada turno se divide el conjunto de personajes entre quienes cumplen y no cumplen el filtro seleccionado, conservando únicamente el grupo correspondiente a la respuesta.
 
-## 🏗️ Arquitectura y Vistas (Separación de Responsabilidades)
+### Greedy
 
-El proyecto separa estrictamente el motor lógico de la presentación mediante la interfaz `RegistroRazonamiento` y el patrón *Observer*.
-- **Vista de Consola:** Orientada a la auditoría algorítmica. Expone paso a paso el razonamiento interno de la máquina (criterios de partición, evaluación minimax y porcentajes de descarte), demostrando que las decisiones se toman por un criterio formal y no al azar.
-- **Vista Gráfica (Swing):** Orientada a la experiencia de usuario. Implementada con una arquitectura basada en estados para no bloquear el hilo de la interfaz (EDT), permitiendo un juego fluido.
+La máquina utiliza una estrategia **voraz con criterio minimax** para seleccionar la siguiente pregunta.
 
-## 🚀 Modos de Ejecución (Paquete `app`)
+En cada turno evalúa los filtros disponibles y elige aquel cuyo **peor caso deje la menor cantidad de candidatos**, buscando una división lo más cercana posible al 50/50.
 
-El proyecto incluye cuatro puntos de entrada independientes:
-1. **JuegoConsola:** Partida interactiva jugable desde la terminal con traza de razonamiento detallada.
-2. **VentanaJuego:** Interfaz gráfica (Swing) para jugar contra la máquina.
-3. **SimulacionEstrategias:** Modo *Máquina vs Máquina* que enfrenta distintas estrategias (Greedy vs. Secuencial) para medir empíricamente su eficacia.
-4. **VerificacionCatalogo / BenchmarkOrdenamiento:** Pruebas de correctitud de datos y comparativas de rendimiento (MergeSort vs algoritmos cuadráticos) para justificar las decisiones de ordenamiento.
-
-## 📋 Reglas y Entidades
-- **Catálogo:** 23 personajes con características y combinaciones únicas.
-- **Filtros de búsqueda:** Género, Calvicie, Uso de Lentes, y 3 variables excluyentes de Color de Pelo.
-- **Restricción de Información:** La máquina accede a las respuestas a través de una interfaz estricta (`Oraculo`), imposibilitando el acceso directo a la variable seleccionada por el jugador.
-
-## 🛠️ Tecnologías
-- Java 21 (Microsoft OpenJDK)
-- Java Swing (UI)
+También se implementa una **función de factibilidad**, que descarta preguntas ya utilizadas o que no permiten reducir el conjunto de candidatos.
 
 ---
+
+## 🏗️ Arquitectura
+
+El proyecto separa el **motor lógico** de las diferentes formas de presentación.
+
+* 🎮 **Motor del juego:** administra partidas, jugadores, candidatos, filtros y reglas.
+* 🧠 **Máquina Greedy:** selecciona preguntas mediante el criterio minimax.
+* 🔎 **Máquina Secuencial:** utiliza un orden fijo de preguntas para comparar estrategias.
+* 📝 **Registro de razonamiento:** permite mostrar las decisiones internas de la máquina sin acoplar la lógica a una interfaz específica.
+* 🖥️ **Interfaz gráfica:** desarrollada con **Java Swing**.
+* 💻 **Consola:** permite jugar y visualizar el razonamiento algorítmico paso a paso.
+* 🔇 **Modo silencioso:** utilizado para realizar simulaciones y benchmarks.
+
+---
+
+## 🚀 Modos de Ejecución
+
+El proyecto cuenta con diferentes puntos de entrada:
+
+1. **JuegoConsola**
+   Partida interactiva desde la terminal con información detallada sobre las decisiones de la máquina.
+
+2. **VentanaJuego**
+   Interfaz gráfica en Swing ambientada en la Academia Umbraluz.
+
+3. **SimulacionEstrategias**
+   Ejecuta partidas entre diferentes estrategias para comparar su rendimiento.
+
+4. **VerificacionCatalogo**
+   Comprueba las condiciones y restricciones del catálogo antes de iniciar el juego.
+
+5. **BenchmarkOrdenamiento**
+   Compara experimentalmente los tiempos de **MergeSort, Burbujeo e Inserción Simple** sobre diferentes tamaños de entrada.
+
+---
+
+## 📋 Juego y Entidades
+
+* 🧙 **23 personajes** pertenecientes a la Academia Umbraluz.
+* 🧩 Cada personaje posee una combinación única de atributos.
+* 🔮 **6 filtros de búsqueda:**
+
+  * Género
+  * Calvicie
+  * Anteojos
+  * Pelo colorado
+  * Pelo negro
+  * Pelo amarillo
+* 🎯 Las preguntas permiten reducir progresivamente el conjunto de candidatos.
+* 🔐 El personaje secreto se obtiene mediante un **Oráculo**, evitando que la lógica del juego pueda acceder directamente al secreto.
+* 🏁 La máquina realiza su suposición cuando alcanza un único candidato.
+
+---
+
+## 📊 Complejidad
+
+El análisis del proyecto utiliza:
+
+* **Ordenamiento inicial:** Θ(n log n)
+* **Búsqueda binaria:** Θ(log n)
+* **Filtrado de candidatos:** Θ(n)
+* **Selección Greedy:** Θ(f · n)
+* **Partida completa:** Θ(f · n)
+* **Aplicación completa:** **Θ(n log n)**
+
+Donde:
+
+* `n` = cantidad de personajes.
+* `f` = cantidad de filtros.
+
+La complejidad general queda dominada por el **ordenamiento inicial mediante MergeSort**.
+
+---
+
+## 📈 Comparación de Estrategias
+
+La implementación permite comparar el comportamiento de diferentes estrategias sobre las mismas 23 partidas:
+
+| Estrategia                | Peor caso | Promedio | Aciertos |
+| ------------------------- | --------: | -------: | -------: |
+| Greedy + Factibilidad     |  6 turnos |     5,61 |    23/23 |
+| Secuencial + Factibilidad |  6 turnos |     5,61 |    23/23 |
+| Secuencial pura           |  7 turnos |     6,96 |    23/23 |
+
+La experimentación permite observar que, para este catálogo, la **función de factibilidad tiene mayor impacto práctico que la selección minimax**, debido a las dependencias existentes entre los atributos de los personajes.
+
+---
+
+## 🛠️ Tecnologías
+
+* **Java 21**
+* **Java Swing**
+* **ArrayList**
+* **HashSet**
+* **HashMap**
+* Programación orientada a objetos
+* Algoritmos de ordenamiento y búsqueda
+* Análisis de complejidad asintótica
+
+---
+
+## 🎓 Asignatura
+
+**Diseño y Análisis de Algoritmos**
+Docente: **López Juan Ignacio**
+
+**Alumna:** Candela Baptista
+
+---
+
 *Desarrollado por Candela Baptista.*
