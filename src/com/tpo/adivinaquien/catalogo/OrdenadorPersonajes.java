@@ -27,7 +27,7 @@ public class OrdenadorPersonajes {
      * MergeSort: divide la lista en dos mitades, ordena cada una
      * recursivamente y mezcla las dos mitades ya ordenadas.
      *
-     * Esquema de la ppt:
+     * Esquema de la catedra:
      *   CasoBase(x)        -> lista de 0 o 1 elemento, ya esta ordenada
      *   SolucionDirecta(x) -> devolverla tal cual
      *   descomponer(x)     -> partir al medio en dos sublistas

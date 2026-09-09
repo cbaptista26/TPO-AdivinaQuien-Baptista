@@ -41,7 +41,7 @@ public class BenchmarkOrdenamiento {
         List<Personaje> comoLlegan = CatalogoPersonajes.getInstancia().getOrdenDeCarga();
 
         titulo("CASO REAL DEL TPO: n = 23, tal como llegan (agrupados por genero)");
-        medirTanda(comoLlegan, 20000);
+        tablaDeTresEjecuciones(comoLlegan, 20000);
 
         // ---- 1b. Los mismos 23, pero desordenados ----
         // El enunciado dice que los personajes llegan agrupados por genero, o
@@ -52,7 +52,7 @@ public class BenchmarkOrdenamiento {
         Collections.shuffle(mezclados, new Random(7));
 
         titulo("LOS MISMOS 23, PERO DESORDENADOS AL AZAR");
-        medirTanda(mezclados, 20000);
+        tablaDeTresEjecuciones(mezclados, 20000);
 
         // ---- 2. Tamanios mayores, para ver la tendencia ----
         titulo("TAMANIOS MAYORES (personajes generados al azar)");
@@ -94,6 +94,44 @@ public class BenchmarkOrdenamiento {
     }
 
     // ------------------------------------------------------------------
+
+    /**
+     * La tabla que pide la consigna: tres ejecuciones de cada algoritmo sobre la
+     * MISMA lista, mas el promedio.
+     *
+     * Corro cada ejecucion muchas veces y promedio porque con 23 elementos una
+     * sola pasada tarda menos que la resolucion del reloj. Ademas hago una tanda
+     * de calentamiento que no cuento, porque la JVM va compilando el codigo a
+     * medida que lo ve ejecutarse y las primeras corridas siempre salen mas
+     * lentas de lo que realmente son.
+     */
+    private static void tablaDeTresEjecuciones(List<Personaje> datos, int reps) {
+
+        String[] nombres = {"MergeSort", "Burbujeo", "Insercion simple"};
+        String[] ordenes = {"Theta(n log n)", "O(n^2)", "O(n^2)"};
+
+        @SuppressWarnings("unchecked")
+        BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>[] algoritmos =
+                new BiFunction[]{
+                        (BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>)
+                                OrdenadorPersonajes::mergeSort,
+                        (BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>)
+                                OrdenadorPersonajes::burbujeo,
+                        (BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>)
+                                OrdenadorPersonajes::insercionSimple};
+
+        System.out.printf("%n  %-18s %-16s %-11s %-11s %-11s %s%n",
+                "ALGORITMO", "COMPLEJIDAD", "EJEC. 1", "EJEC. 2", "EJEC. 3", "PROMEDIO");
+        System.out.println("  " + "-".repeat(82));
+
+        for (int i = 0; i < 3; i++) {
+            double e1 = medir(datos, algoritmos[i], reps);
+            double e2 = medir(datos, algoritmos[i], reps);
+            double e3 = medir(datos, algoritmos[i], reps);
+            System.out.printf("  %-18s %-16s %-11s %-11s %-11s %s%n",
+                    nombres[i], ordenes[i], ms(e1), ms(e2), ms(e3), ms((e1 + e2 + e3) / 3));
+        }
+    }
 
     /** Imprime la comparacion de los tres algoritmos sobre una lista dada. */
     private static void medirTanda(List<Personaje> datos, int reps) {
