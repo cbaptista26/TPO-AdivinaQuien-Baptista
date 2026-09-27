@@ -130,7 +130,3 @@ La experimentación permite observar que, para este catálogo, la **función de 
 Docente: **López Juan Ignacio**
 
 **Alumna:** Candela Baptista
-
----
-
-*Desarrollado por Candela Baptista.*
