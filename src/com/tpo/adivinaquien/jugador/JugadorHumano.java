@@ -22,9 +22,6 @@ public class JugadorHumano extends Jugador {
     }
 
     @Override
-    public boolean esMaquina() { return false; }
-
-    @Override
     public String getCriterio() { return "Decide la persona."; }
 
     /**

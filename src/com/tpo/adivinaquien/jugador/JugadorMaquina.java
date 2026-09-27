@@ -27,9 +27,6 @@ public abstract class JugadorMaquina extends Jugador {
         return Optional.of(jugarTurno());
     }
 
-    @Override
-    public boolean esMaquina() { return true; }
-
     /**
      * La funcion de factibilidad del esquema greedy. Saca dos cosas: los filtros
      * que ya pregunte, y los que dejarian un lado vacio.
@@ -41,7 +38,7 @@ public abstract class JugadorMaquina extends Jugador {
      * preguntaste dos colores no preguntes el tercero", sino midiendo la
      * particion real. Asi funciona para cualquier dependencia entre atributos.
      *
-     * Midiendo cuanto aporta cada parte del greedy (seccion 5.3), esta funcion
+     * Midiendo cuanto aporta cada parte del greedy (seccion 6.2), esta funcion
      * resulto ser la que mas impacta.
      */
     protected List<Filtro> filtrosFactibles() {

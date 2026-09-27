@@ -74,7 +74,6 @@ public abstract class Jugador {
     public int getCantidadCandidatos()     { return candidatos.size(); }
     public List<Personaje> getCandidatos() { return new ArrayList<>(candidatos); }
 
-    public abstract boolean esMaquina();
     public abstract String getCriterio();
 
     /**

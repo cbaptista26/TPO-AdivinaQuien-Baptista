@@ -3,7 +3,6 @@ package com.tpo.adivinaquien.vista;
 import com.tpo.adivinaquien.catalogo.CatalogoPersonajes;
 import com.tpo.adivinaquien.juego.Partida;
 import com.tpo.adivinaquien.juego.RegistroRazonamiento;
-import com.tpo.adivinaquien.juego.ResultadoTurno;
 import com.tpo.adivinaquien.juego.SelectorDePersonaje;
 import com.tpo.adivinaquien.jugador.*;
 import com.tpo.adivinaquien.modelo.EvaluacionFiltro;

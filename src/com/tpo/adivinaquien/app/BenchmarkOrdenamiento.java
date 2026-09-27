@@ -110,24 +110,22 @@ public class BenchmarkOrdenamiento {
         String[] nombres = {"MergeSort", "Burbujeo", "Insercion simple"};
         String[] ordenes = {"Theta(n log n)", "O(n^2)", "O(n^2)"};
 
-        @SuppressWarnings("unchecked")
-        BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>[] algoritmos =
-                new BiFunction[]{
-                        (BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>)
-                                OrdenadorPersonajes::mergeSort,
-                        (BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>)
-                                OrdenadorPersonajes::burbujeo,
-                        (BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>)
-                                OrdenadorPersonajes::insercionSimple};
+        // Uso una List y no un array porque Java no deja crear arrays de tipos
+        // genericos sin avisar que la comprobacion de tipos queda incompleta.
+        // Con List queda sin warnings y sin tener que suprimir nada.
+        List<BiFunction<List<Personaje>, Comparator<Personaje>, List<Personaje>>> algoritmos =
+                List.of(OrdenadorPersonajes::mergeSort,
+                        OrdenadorPersonajes::burbujeo,
+                        OrdenadorPersonajes::insercionSimple);
 
         System.out.printf("%n  %-18s %-16s %-11s %-11s %-11s %s%n",
                 "ALGORITMO", "COMPLEJIDAD", "EJEC. 1", "EJEC. 2", "EJEC. 3", "PROMEDIO");
         System.out.println("  " + "-".repeat(82));
 
         for (int i = 0; i < 3; i++) {
-            double e1 = medir(datos, algoritmos[i], reps);
-            double e2 = medir(datos, algoritmos[i], reps);
-            double e3 = medir(datos, algoritmos[i], reps);
+            double e1 = medir(datos, algoritmos.get(i), reps);
+            double e2 = medir(datos, algoritmos.get(i), reps);
+            double e3 = medir(datos, algoritmos.get(i), reps);
             System.out.printf("  %-18s %-16s %-11s %-11s %-11s %s%n",
                     nombres[i], ordenes[i], ms(e1), ms(e2), ms(e3), ms((e1 + e2 + e3) / 3));
         }

@@ -13,7 +13,7 @@ import java.util.List;
  * 23 personajes. Burbujeo e insercion los implemente SOLO para la tabla de
  * tiempos: no se usan en el juego.
  *
- * Los numeros medidos estan en BenchmarkOrdenamiento y en la seccion 4.3.
+ * Los numeros medidos estan en BenchmarkOrdenamiento y en la seccion 5.
  */
 public class OrdenadorPersonajes {
 

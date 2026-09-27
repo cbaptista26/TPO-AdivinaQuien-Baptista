@@ -22,7 +22,7 @@ import java.util.List;
  * lo muestra con numeros.
  *
  * El orden fijo arranca por los colores, que son los filtros mas desparejos
- * (cortan 8/15 y 7/16), asi la diferencia se nota. Ver seccion 5.3.
+ * (cortan 8/15 y 7/16), asi la diferencia se nota. Ver seccion 6.2.
  */
 public class MaquinaSecuencial extends JugadorMaquina {
 

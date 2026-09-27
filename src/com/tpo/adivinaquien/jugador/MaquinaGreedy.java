@@ -24,7 +24,7 @@ import java.util.List;
  *   Solucion      -> queda un solo personaje              (esCasoBase)
  *   Objetivo      -> usar la menor cantidad de preguntas
  *
- * En la seccion 5 de la documentacion explico por que el criterio es el peor
+ * En la seccion 6 de la documentacion explico por que el criterio es el peor
  * caso y por que en mi catalogo llega al optimo.
  */
 public class MaquinaGreedy extends JugadorMaquina {

@@ -156,8 +156,12 @@ public class JuegoConsola {
 
         while (!partida.haTerminado()) {
             partida.anunciarTurno();
-            JugadorMaquina actor = (JugadorMaquina) partida.getEnTurno();
-            System.out.println("  >> " + partida.aplicarJugada(actor.jugarTurno()).mensaje());
+
+            // No hace falta castear a JugadorMaquina: cualquier Jugador responde
+            // decidirJugada(), y como aca los dos son maquinas siempre traen una.
+            partida.getEnTurno().decidirJugada().ifPresent(jugada ->
+                    System.out.println("  >> " + partida.aplicarJugada(jugada).mensaje()));
+
             System.out.print("  [Enter para el proximo turno] ");
             scanner.nextLine();
         }
